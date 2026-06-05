@@ -2,7 +2,7 @@
   "gremio": "PROMUF",
   "estado_venezuela": "Falcón",
   "ultima_actualizacion": "2026-06-05",
-  "hash_sha256": "f25e4bb85e3e93686e1870c9849936da3be323fe46048590e55204aff436c83b",
+  "hash_sha256": "839dc7247e932dfc3443ce59f16206d8b9c875bd329faa6665b81c69d6a00f79",
   "transacciones": [
     {
       "fecha": "2026-06-05",
@@ -10,9 +10,9 @@
       "descripcion": "Cuota de Junio",
       "categoria": "Cuotas",
       "tipo": "Ingreso",
-      "monto": 15000,
+      "monto": 20000,
       "saldo": 120000,
-      "hash": "7945e23e9721a73b0f692eb1fc7b8c91040d105e1803697020d8ab6c28245f34"
+      "hash": "a6b97a4598ab4a0340f2063dcde01a66756ff02be1bf034bd5d4e085e46aee5c"
     },
     {
       "fecha": "2026-06-05",
