@@ -2,7 +2,7 @@
   "gremio": "PROMUF",
   "estado_venezuela": "Falcón",
   "ultima_actualizacion": "2026-06-05",
-  "hash_sha256": "8b708c1cfa52912c8fdc602f5668b5e70cd2c98ba53a92719f457e77dcb953eb",
+  "hash_sha256": "54bfea67cb74171970941f4e99e9941f025d9c098441278b4e69500e5ba50b90",
   "transacciones": [
     {
       "fecha": "2026-06-05",
@@ -12,7 +12,7 @@
       "tipo": "Ingreso",
       "monto": 15000,
       "saldo": 120000,
-      "hash": ""
+      "hash": "7945e23e9721a73b0f692eb1fc7b8c91040d105e1803697020d8ab6c28245f34"
     }
   ]
 }
