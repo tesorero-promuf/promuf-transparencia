@@ -1,6 +1,7 @@
 {
-  "saldoUSD": 0,
-  "saldoBs": 0,
-  "fechaActualizacion": "2026-06-04 08:24:00",
-  "movimientos": []
+  "gremio": "PROMUF",
+  "estado": "Falcón",
+  "ultima_actualizacion": "",
+  "hash_sha256": "",
+  "transacciones": []
 }
