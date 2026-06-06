@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PROMUF — Portal de Transparencia Financiera</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy:    #0F1D45;
+    --navy2:   #1A2B5E;
+    --ocean:   #1A6FA8;
+    --wave:    #2AA9C8;
+    --gold:    #C89B3C;
+    --gold2:   #E8C06A;
+    --income:  #1D9E75;
+    --expense: #C0392B;
+    --bg:      #F4F6FA;
+    --card:    #FFFFFF;
+    --border:  rgba(26,43,94,0.1);
+    --text:    #0F1D45;
+    --muted:   #6B7A99;
+    --radius:  14px;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── HERO HEADER ── */
+  .hero {
+    background: var(--navy);
+    position: relative;
+    overflow: hidden;
+    padding: 0;
+  }
+
+  .hero-waves {
+    position: absolute; inset: 0;
+    opacity: 0.07;
+    background-image:
+      radial-gradient(ellipse 80% 60% at 20% 80%, var(--wave) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 80% at 80% 20%, var(--ocean) 0%, transparent 60%);
+  }
+
+  .hero-pattern {
+    position: absolute; inset: 0;
+    background-image: repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 30px,
+      rgba(255,255,255,0.015) 30px,
+      rgba(255,255,255,0.015) 31px
+    );
+  }
+
+  .hero-inner {
+    position: relative; z-index: 1;
+    max-width: 1100px; margin: 0 auto;
+    padding: 40px 24px 36px;
+    display: flex; align-items: center; gap: 28px; flex-wrap: wrap;
+  }
+
+  .hero-emblem {
+    width: 88px; height: 88px;
+    border-radius: 50%;
+    border: 2px solid rgba(200,155,60,0.5);
+    background: rgba(200,155,60,0.08);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 0 0 6px rgba(200,155,60,0.08);
+  }
+
+  .hero-emblem svg { width: 52px; height: 52px; }
+
+  .hero-text { flex: 1; }
+
+  .hero-sup {
+    font-size: 11px; font-weight: 500; letter-spacing: 2px;
+    color: var(--gold2); text-transform: uppercase; margin-bottom: 6px;
+  }
+
+  .hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(24px, 4vw, 36px);
+    font-weight: 900; color: #fff;
+    line-height: 1.1; margin-bottom: 6px;
+  }
+
+  .hero-title span { color: var(--gold2); }
+
+  .hero-sub {
+    font-size: 14px; color: rgba(255,255,255,0.55);
+    font-weight: 300;
+  }
+
+  .hero-right {
+    text-align: right; margin-left: auto;
+  }
+
+  .hero-date-label { font-size: 11px; color: rgba(255,255,255,0.4); margin-bottom: 4px; }
+  .hero-date { font-size: 18px; font-weight: 600; color: #fff; }
+
+  .hero-badge {
+    margin-top: 8px;
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(29,158,117,0.15);
+    border: 1px solid rgba(29,158,117,0.3);
+    border-radius: 999px; padding: 4px 12px;
+    font-size: 11px; color: #5DCAA5; font-weight: 500;
+  }
+
+  .hero-badge::before { content: '●'; font-size: 8px; }
+
+  /* ── HASH BAR ── */
+  .hash-bar {
+    background: rgba(255,255,255,0.04);
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .hash-inner {
+    max-width: 1100px; margin: 0 auto;
+    padding: 12px 24px;
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  }
+
+  .hash-label {
+    font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: rgba(255,255,255,0.3); white-space: nowrap;
+  }
+
+  .hash-icon { font-size: 14px; opacity: 0.4; }
+
+  .hash-val {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; color: var(--gold2);
+    opacity: 0.8; flex: 1; word-break: break-all;
+  }
+
+  .hash-link {
+    font-size: 11px; color: rgba(255,255,255,0.35);
+    text-decoration: none; white-space: nowrap;
+    display: flex; align-items: center; gap: 4px;
+    transition: color 0.2s;
+  }
+
+  .hash-link:hover { color: var(--gold2); }
+
+  /* ── MAIN ── */
+  .main {
+    max-width: 1100px; margin: 0 auto;
+    padding: 32px 24px 64px;
+  }
+
+  /* ── METRICS ── */
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px; margin-bottom: 28px;
+  }
+
+  .metric {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    position: relative; overflow: hidden;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .metric::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  }
+
+  .metric.income::before  { background: var(--income); }
+  .metric.expense::before { background: var(--expense); }
+  .metric.balance::before { background: var(--ocean); }
+  .metric.count::before   { background: var(--gold); }
+
+  .metric-icon {
+    font-size: 20px; margin-bottom: 10px; display: block;
+  }
+
+  .metric-label {
+    font-size: 11px; font-weight: 500; letter-spacing: 0.8px;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 6px;
+  }
+
+  .metric-val {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px; font-weight: 700; line-height: 1;
+  }
+
+  .metric-val.income  { color: var(--income); }
+  .metric-val.expense { color: var(--expense); }
+  .metric-val.balance { color: var(--ocean); }
+  .metric-val.count   { color: var(--navy); }
+
+  .metric-unit {
+    font-size: 13px; font-weight: 400; font-family: 'DM Sans', sans-serif;
+    color: var(--muted); margin-left: 4px;
+  }
+
+  /* ── CHARTS ── */
+  .charts-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px; margin-bottom: 28px;
+  }
+
+  @media (max-width: 680px) {
+    .charts-row { grid-template-columns: 1fr; }
+  }
+
+  .chart-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .chart-title {
+    font-size: 11px; font-weight: 600; letter-spacing: 1px;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 16px;
+  }
+
+  .chart-wrap { position: relative; height: 200px; }
+
+  /* ── FILTERS ── */
+  .filters-row {
+    display: flex; align-items: center; gap: 8px;
+    flex-wrap: wrap; margin-bottom: 16px;
+  }
+
+  .filter-label {
+    font-size: 12px; color: var(--muted); font-weight: 500;
+    margin-right: 4px;
+  }
+
+  .pill {
+    font-size: 12px; font-weight: 500;
+    padding: 5px 14px; border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--card); color: var(--muted);
+    cursor: pointer; transition: all 0.18s;
+  }
+
+  .pill:hover { border-color: var(--ocean); color: var(--ocean); }
+  .pill.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+
+  .search-wrap {
+    margin-left: auto;
+    position: relative;
+  }
+
+  .search-input {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px; padding: 6px 12px 6px 32px;
+    border: 1px solid var(--border); border-radius: 999px;
+    background: var(--card); color: var(--text);
+    outline: none; width: 200px; transition: border-color 0.2s;
+  }
+
+  .search-input:focus { border-color: var(--ocean); }
+
+  .search-icon {
+    position: absolute; left: 10px; top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px; color: var(--muted); pointer-events: none;
+  }
+
+  /* ── TABLE ── */
+  .table-wrap {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    animation: fadeUp 0.7s ease both;
+  }
+
+  .table-head {
+    display: grid;
+    grid-template-columns: 110px 60px 1fr 120px 80px 110px;
+    padding: 10px 20px;
+    background: var(--navy);
+    gap: 8px;
+  }
+
+  .th {
+    font-size: 10px; font-weight: 600; letter-spacing: 1px;
+    text-transform: uppercase; color: rgba(255,255,255,0.5);
+  }
+
+  .th.right { text-align: right; }
+
+  .table-body { }
+
+  .table-row {
+    display: grid;
+    grid-template-columns: 110px 60px 1fr 120px 80px 110px;
+    padding: 12px 20px; gap: 8px;
+    border-top: 1px solid var(--border);
+    align-items: center;
+    transition: background 0.15s;
+    animation: fadeIn 0.3s ease both;
+  }
+
+  .table-row:hover { background: rgba(26,111,168,0.04); }
+
+  .td-date {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px; color: var(--muted);
+  }
+
+  .td-id {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; color: var(--muted);
+  }
+
+  .td-desc { font-size: 13px; font-weight: 500; }
+
+  .td-cat {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; color: var(--muted);
+  }
+
+  .cat-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+  .badge {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.5px;
+    padding: 3px 9px; border-radius: 999px; text-transform: uppercase;
+  }
+
+  .badge.ingreso { background: #E1F5EE; color: #0F6E56; }
+  .badge.egreso  { background: #FAECE7; color: #993C1D; }
+
+  .td-amount {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px; font-weight: 500; text-align: right;
+  }
+
+  .td-amount.pos { color: var(--income); }
+  .td-amount.neg { color: var(--expense); }
+
+  /* ── HASH TOOLTIP ── */
+  .hash-cell {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; color: var(--muted);
+    cursor: default; position: relative;
+    white-space: nowrap; overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .hash-cell:hover::after {
+    content: attr(data-hash);
+    position: absolute; bottom: 100%; left: 0;
+    background: var(--navy); color: #fff;
+    font-size: 10px; padding: 4px 8px;
+    border-radius: 6px; white-space: nowrap;
+    z-index: 10; pointer-events: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+
+  /* ── FOOTER ── */
+  .footer {
+    margin-top: 28px;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 10px;
+    padding: 14px 20px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 12px; color: var(--muted);
+  }
+
+  .verify-btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px; font-weight: 500;
+    padding: 6px 14px; border-radius: 999px;
+    border: 1px solid var(--ocean); color: var(--ocean);
+    background: transparent; cursor: pointer;
+    transition: all 0.18s; display: flex; align-items: center; gap: 6px;
+    text-decoration: none;
+  }
+
+  .verify-btn:hover { background: var(--ocean); color: #fff; }
+
+  /* ── LOADING / ERROR ── */
+  .state-msg {
+    text-align: center; padding: 60px 20px;
+    color: var(--muted); font-size: 15px;
+  }
+
+  .state-msg .icon { font-size: 36px; margin-bottom: 12px; display: block; }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 780px) {
+    .table-head,
+    .table-row {
+      grid-template-columns: 90px 1fr 80px 90px;
+    }
+    .col-id, .col-hash { display: none; }
+    .th:nth-child(2), .td-id { display: none; }
+  }
+
+  @media (max-width: 520px) {
+    .hero-right { display: none; }
+    .metrics { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="hero-waves"></div>
+  <div class="hero-pattern"></div>
+  <div class="hero-inner">
+    <div class="hero-emblem">
+      <svg viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="26" cy="26" r="24" stroke="#C89B3C" stroke-width="1.5" opacity="0.6"/>
+        <path d="M26 10 C18 10, 12 16, 12 24 C12 34, 26 44, 26 44 C26 44, 40 34, 40 24 C40 16, 34 10, 26 10Z" fill="#C89B3C" opacity="0.15"/>
+        <line x1="26" y1="8" x2="26" y2="44" stroke="#C89B3C" stroke-width="1.2" opacity="0.7"/>
+        <line x1="22" y1="34" x2="30" y2="34" stroke="#C89B3C" stroke-width="1.5" opacity="0.7"/>
+        <path d="M23 20 Q26 16 29 20" stroke="#C89B3C" stroke-width="1.2" fill="none" opacity="0.9"/>
+        <!-- treble clef suggestion -->
+        <text x="17" y="32" font-size="9" fill="#C89B3C" opacity="0.8" font-family="serif">𝄞</text>
+        <!-- waves suggestion -->
+        <path d="M13 38 Q17 35, 21 38 Q25 41, 29 38 Q33 35, 37 38" stroke="#2AA9C8" stroke-width="1" fill="none" opacity="0.6"/>
+        <path d="M13 42 Q17 39, 21 42 Q25 45, 29 42 Q33 39, 37 42" stroke="#2AA9C8" stroke-width="1" fill="none" opacity="0.3"/>
+      </svg>
+    </div>
+    <div class="hero-text">
+      <p class="hero-sup">Estado Falcón · Venezuela</p>
+      <h1 class="hero-title">Falcón <span>Afinado</span> — PROMUF</h1>
+      <p class="hero-sub">Portal de Transparencia Financiera del Gremio Musical · Juntos afinamos el gremio.</p>
+    </div>
+    <div class="hero-right">
+      <div class="hero-date-label">Último corte</div>
+      <div class="hero-date" id="hero-date">—</div>
+      <div class="hero-badge" id="hero-badge">Verificado en GitHub</div>
+    </div>
+  </div>
+  <div class="hash-bar">
+    <div class="hash-inner">
+      <span class="hash-label">SHA-256</span>
+      <span class="hash-val" id="hash-global">Cargando...</span>
+      <a href="https://github.com/tesorero-promuf/promuf-transparencia/blob/main/estado.json"
+         class="hash-link" target="_blank" rel="noopener">
+        🔗 Ver en GitHub
+      </a>
+    </div>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- METRICS -->
+  <div class="metrics" id="metrics">
+    <div class="metric income">
+      <span class="metric-icon">⬇</span>
+      <div class="metric-label">Total Ingresos</div>
+      <div class="metric-val income" id="m-income">—<span class="metric-unit">Bs.</span></div>
+    </div>
+    <div class="metric expense">
+      <span class="metric-icon">⬆</span>
+      <div class="metric-label">Total Egresos</div>
+      <div class="metric-val expense" id="m-expense">—<span class="metric-unit">Bs.</span></div>
+    </div>
+    <div class="metric balance">
+      <span class="metric-icon">⚖</span>
+      <div class="metric-label">Balance</div>
+      <div class="metric-val balance" id="m-balance">—<span class="metric-unit">Bs.</span></div>
+    </div>
+    <div class="metric count">
+      <span class="metric-icon">📋</span>
+      <div class="metric-label">Transacciones</div>
+      <div class="metric-val count" id="m-count">—</div>
+    </div>
+  </div>
+
+  <!-- CHARTS -->
+  <div class="charts-row">
+    <div class="chart-card">
+      <div class="chart-title">Ingresos vs Egresos</div>
+      <div class="chart-wrap"><canvas id="barChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Distribución por categoría</div>
+      <div class="chart-wrap"><canvas id="pieChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="filters-row" id="filters-row">
+    <span class="filter-label">Filtrar:</span>
+    <span class="pill active" onclick="setFilter('all', this)">Todos</span>
+    <span class="pill" onclick="setFilter('ingreso', this)">Solo ingresos</span>
+    <span class="pill" onclick="setFilter('egreso', this)">Solo egresos</span>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" id="search" type="text"
+             placeholder="Buscar miembro, descripción..." oninput="renderTable()">
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-wrap">
+    <div class="table-head">
+      <span class="th">Fecha</span>
+      <span class="th col-id">ID Miembro</span>
+      <span class="th">Descripción</span>
+      <span class="th">Categoría</span>
+      <span class="th">Tipo</span>
+      <span class="th right">Monto (Bs.)</span>
+    </div>
+    <div class="table-body" id="table-body">
+      <div class="state-msg">
+        <span class="icon">🎵</span>
+        Cargando finanzas del gremio...
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span>
+      Datos sincronizados desde Google Sheets → <strong>estado.json</strong> →
+      <a href="https://github.com/tesorero-promuf/promuf-transparencia"
+         target="_blank" style="color:var(--ocean);">GitHub</a> ·
+      PROMUF © <span id="year"></span>
+    </span>
+    <a class="verify-btn"
+       href="https://github.com/tesorero-promuf/promuf-transparencia/commits/main"
+       target="_blank" rel="noopener">
+      🛡 Ver historial de cambios
+    </a>
+  </div>
+
+</main>
+
+<script>
+// ══════════════════════════════════════════════
+//  CONFIGURACIÓN — cambia solo esta URL
+// ══════════════════════════════════════════════
+const JSON_URL = 'https://raw.githubusercontent.com/tesorero-promuf/promuf-transparencia/main/estado.json';
+
+// ══════════════════════════════════════════════
+const CAT_COLORS = {
+  'Cuotas':          '#1A6FA8',
+  'Infraestructura': '#D85A30',
+  'Material musical':'#C89B3C',
+  'Donación':        '#1D9E75',
+  'Mantenimiento':   '#9B59B6',
+  'Evento':          '#2AA9C8',
+  'Administración':  '#888780',
+};
+
+function catColor(cat) {
+  return CAT_COLORS[cat] || '#' + Math.abs(hashStr(cat)).toString(16).slice(0,6).padStart(6,'a');
+}
+function hashStr(s) {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = Math.imul(31, h) + s.charCodeAt(i) | 0;
+  return h;
+}
+
+let allTxns = [];
+let activeFilter = 'all';
+let barChartInst, pieChartInst;
+
+// ── FORMATO ──
+function fmt(n) {
+  return Number(n).toLocaleString('es-VE');
+}
+
+// ── FILTERED ──
+function filtered() {
+  const q = (document.getElementById('search')?.value || '').toLowerCase();
+  return allTxns.filter(t => {
+    const tipoOk = activeFilter === 'all' || (t.tipo || '').toLowerCase() === activeFilter;
+    const qOk = !q || JSON.stringify(t).toLowerCase().includes(q);
+    return tipoOk && qOk;
+  });
+}
+
+// ── METRICS ──
+function renderMetrics() {
+  const ft = filtered();
+  const income  = ft.filter(t => (t.tipo||'').toLowerCase() === 'ingreso').reduce((s,t) => s + Number(t.monto), 0);
+  const expense = ft.filter(t => (t.tipo||'').toLowerCase() === 'egreso').reduce((s,t)  => s + Number(t.monto), 0);
+  document.getElementById('m-income').innerHTML  = fmt(income)  + '<span class="metric-unit">Bs.</span>';
+  document.getElementById('m-expense').innerHTML = fmt(expense) + '<span class="metric-unit">Bs.</span>';
+  document.getElementById('m-balance').innerHTML = fmt(income - expense) + '<span class="metric-unit">Bs.</span>';
+  document.getElementById('m-count').textContent = ft.length;
+}
+
+// ── CHARTS ──
+function renderCharts() {
+  const ft = filtered();
+
+  // Gather months
+  const months = [...new Set(allTxns.map(t => {
+    const d = String(t.fecha); return d.substring(0,7);
+  }))].sort();
+
+  const incomeByM  = months.map(m => ft.filter(t => String(t.fecha).startsWith(m) && (t.tipo||'').toLowerCase()==='ingreso').reduce((s,t)=>s+Number(t.monto),0));
+  const expenseByM = months.map(m => ft.filter(t => String(t.fecha).startsWith(m) && (t.tipo||'').toLowerCase()==='egreso').reduce((s,t)=>s+Number(t.monto),0));
+  const labels = months.map(m => {
+    const [y,mo] = m.split('-');
+    const names = ['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    return names[parseInt(mo)] + ' ' + y.slice(2);
+  });
+
+  if (barChartInst) barChartInst.destroy();
+  barChartInst = new Chart(document.getElementById('barChart'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label:'Ingresos',  data: incomeByM,  backgroundColor:'#1D9E75', borderRadius:5 },
+        { label:'Egresos',   data: expenseByM, backgroundColor:'#C0392B', borderRadius:5 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { font:{size:11}, color:'#6B7A99', boxWidth:10 } } },
+      scales: {
+        x: { ticks:{font:{size:10},color:'#6B7A99'}, grid:{display:false} },
+        y: { ticks:{font:{size:10},color:'#6B7A99', callback: v=>fmt(v)}, grid:{color:'rgba(0,0,0,0.05)'} }
+      }
+    }
+  });
+
+  // Pie por categoría (egresos)
+  const cats = {};
+  ft.filter(t=>(t.tipo||'').toLowerCase()==='egreso').forEach(t=>{
+    cats[t.categoria||'Otros'] = (cats[t.categoria||'Otros']||0) + Number(t.monto);
+  });
+  const catKeys = Object.keys(cats);
+
+  if (pieChartInst) pieChartInst.destroy();
+  if (catKeys.length) {
+    pieChartInst = new Chart(document.getElementById('pieChart'), {
+      type: 'doughnut',
+      data: {
+        labels: catKeys,
+        datasets: [{ data: catKeys.map(k=>cats[k]), backgroundColor: catKeys.map(k=>catColor(k)), borderWidth:2, borderColor:'#fff' }]
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ position:'right', labels:{font:{size:10},boxWidth:10,padding:8,color:'#6B7A99'} } }
+      }
+    });
+  }
+}
+
+// ── TABLE ──
+function renderTable() {
+  renderMetrics();
+  renderCharts();
+  const ft = filtered();
+  const body = document.getElementById('table-body');
+  if (!ft.length) {
+    body.innerHTML = '<div class="state-msg"><span class="icon">🎶</span>Sin transacciones en este período.</div>';
+    return;
+  }
+  body.innerHTML = ft.map(t => {
+    const tipo = (t.tipo||'').toLowerCase();
+    const es_ingreso = tipo === 'ingreso';
+    const hash_short = t.hash ? t.hash.substring(0,12)+'…' : '—';
+    const fecha = String(t.fecha||'').split('-').reverse().join('/');
+    return `
+    <div class="table-row">
+      <span class="td-date">${fecha}</span>
+      <span class="td-id col-id">${t['id miembro']||t.id||'—'}</span>
+      <div>
+        <div class="td-desc">${t.descripcion||'—'}</div>
+        <div class="hash-cell" data-hash="${t.hash||''}" title="${t.hash||''}">${hash_short}</div>
+      </div>
+      <div class="td-cat">
+        <span class="cat-dot" style="background:${catColor(t.categoria||'')}"></span>
+        ${t.categoria||'—'}
+      </div>
+      <span><span class="badge ${es_ingreso?'ingreso':'egreso'}">${t.tipo||'—'}</span></span>
+      <span class="td-amount ${es_ingreso?'pos':'neg'}">
+        ${es_ingreso?'+':'-'}${fmt(t.monto)}
+      </span>
+    </div>`;
+  }).join('');
+}
+
+// ── FILTER ──
+function setFilter(f, el) {
+  activeFilter = f;
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  renderTable();
+}
+
+// ── LOAD DATA ──
+async function loadData() {
+  try {
+    const res = await fetch(JSON_URL + '?t=' + Date.now());
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+
+    allTxns = data.transacciones || [];
+
+    // Header
+    document.getElementById('hero-date').textContent = data.ultima_actualizacion || '—';
+    document.getElementById('hash-global').textContent = data.hash_sha256 || '—';
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    renderTable();
+
+  } catch(e) {
+    document.getElementById('table-body').innerHTML = `
+      <div class="state-msg">
+        <span class="icon">⚠️</span>
+        No se pudo cargar el archivo <strong>estado.json</strong>.<br>
+        <small style="margin-top:8px;display:block;font-size:12px;">
+          Asegúrate de que el repositorio es público y el archivo existe.<br>
+          Error: ${e.message}
+        </small>
+      </div>`;
+    document.getElementById('hash-global').textContent = 'Error al cargar';
+  }
+}
+
+document.getElementById('year').textContent = new Date().getFullYear();
+loadData();
+</script>
+</body>
+</html>
