@@ -444,9 +444,7 @@
         <line x1="26" y1="8" x2="26" y2="44" stroke="#C89B3C" stroke-width="1.2" opacity="0.7"/>
         <line x1="22" y1="34" x2="30" y2="34" stroke="#C89B3C" stroke-width="1.5" opacity="0.7"/>
         <path d="M23 20 Q26 16 29 20" stroke="#C89B3C" stroke-width="1.2" fill="none" opacity="0.9"/>
-        <!-- treble clef suggestion -->
         <text x="17" y="32" font-size="9" fill="#C89B3C" opacity="0.8" font-family="serif">𝄞</text>
-        <!-- waves suggestion -->
         <path d="M13 38 Q17 35, 21 38 Q25 41, 29 38 Q33 35, 37 38" stroke="#2AA9C8" stroke-width="1" fill="none" opacity="0.6"/>
         <path d="M13 42 Q17 39, 21 42 Q25 45, 29 42 Q33 39, 37 42" stroke="#2AA9C8" stroke-width="1" fill="none" opacity="0.3"/>
       </svg>
@@ -501,15 +499,22 @@
     </div>
   </div>
 
-  <!-- CHARTS -->
+  <!-- CHARTS - DOS GRÁFICOS SEPARADOS -->
   <div class="charts-row">
     <div class="chart-card">
-      <div class="chart-title">Ingresos vs Egresos</div>
-      <div class="chart-wrap"><canvas id="barChart"></canvas></div>
+      <div class="chart-title">📥 Ingresos por categoría</div>
+      <div class="chart-wrap"><canvas id="incomePieChart"></canvas></div>
     </div>
     <div class="chart-card">
-      <div class="chart-title">Distribución por categoría</div>
-      <div class="chart-wrap"><canvas id="pieChart"></canvas></div>
+      <div class="chart-title">📤 Egresos por categoría</div>
+      <div class="chart-wrap"><canvas id="expensePieChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="charts-row">
+    <div class="chart-card">
+      <div class="chart-title">Ingresos vs Egresos mensuales</div>
+      <div class="chart-wrap"><canvas id="barChart"></canvas></div>
     </div>
   </div>
 
@@ -576,6 +581,8 @@ const CAT_COLORS = {
   'Mantenimiento':   '#9B59B6',
   'Evento':          '#2AA9C8',
   'Administración':  '#888780',
+  'Auto Gestion':    '#C0392B',
+  'Otros':           '#6B7A99'
 };
 
 function catColor(cat) {
@@ -589,7 +596,7 @@ function hashStr(s) {
 
 let allTxns = [];
 let activeFilter = 'all';
-let barChartInst, pieChartInst;
+let barChartInst, incomePieChartInst, expensePieChartInst;
 
 // ── FORMATO ──
 function fmt(n) {
@@ -621,7 +628,7 @@ function renderMetrics() {
 function renderCharts() {
   const ft = filtered();
 
-  // Gather months
+  // Gráfico de barras (Ingresos vs Egresos por mes)
   const months = [...new Set(allTxns.map(t => {
     const d = String(t.fecha); return d.substring(0,7);
   }))].sort();
@@ -635,45 +642,98 @@ function renderCharts() {
   });
 
   if (barChartInst) barChartInst.destroy();
-  barChartInst = new Chart(document.getElementById('barChart'), {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [
-        { label:'Ingresos',  data: incomeByM,  backgroundColor:'#1D9E75', borderRadius:5 },
-        { label:'Egresos',   data: expenseByM, backgroundColor:'#C0392B', borderRadius:5 }
-      ]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { labels: { font:{size:11}, color:'#6B7A99', boxWidth:10 } } },
-      scales: {
-        x: { ticks:{font:{size:10},color:'#6B7A99'}, grid:{display:false} },
-        y: { ticks:{font:{size:10},color:'#6B7A99', callback: v=>fmt(v)}, grid:{color:'rgba(0,0,0,0.05)'} }
-      }
-    }
-  });
-
-  // Pie por categoría (egresos)
-  const cats = {};
-  ft.filter(t=>(t.tipo||'').toLowerCase()==='egreso').forEach(t=>{
-    cats[t.categoria||'Otros'] = (cats[t.categoria||'Otros']||0) + Number(t.monto);
-  });
-  const catKeys = Object.keys(cats);
-
-  if (pieChartInst) pieChartInst.destroy();
-  if (catKeys.length) {
-    pieChartInst = new Chart(document.getElementById('pieChart'), {
-      type: 'doughnut',
+  const ctx = document.getElementById('barChart')?.getContext('2d');
+  if (ctx) {
+    barChartInst = new Chart(ctx, {
+      type: 'bar',
       data: {
-        labels: catKeys,
-        datasets: [{ data: catKeys.map(k=>cats[k]), backgroundColor: catKeys.map(k=>catColor(k)), borderWidth:2, borderColor:'#fff' }]
+        labels,
+        datasets: [
+          { label:'Ingresos',  data: incomeByM,  backgroundColor:'#1D9E75', borderRadius:5 },
+          { label:'Egresos',   data: expenseByM, backgroundColor:'#C0392B', borderRadius:5 }
+        ]
       },
       options: {
-        responsive:true, maintainAspectRatio:false,
-        plugins:{ legend:{ position:'right', labels:{font:{size:10},boxWidth:10,padding:8,color:'#6B7A99'} } }
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { labels: { font:{size:11}, color:'#6B7A99', boxWidth:10 } } },
+        scales: {
+          x: { ticks:{font:{size:10},color:'#6B7A99'}, grid:{display:false} },
+          y: { ticks:{font:{size:10},color:'#6B7A99', callback: v=>fmt(v)}, grid:{color:'rgba(0,0,0,0.05)'} }
+        }
       }
     });
+  }
+
+  // Gráfico de INGRESOS por categoría
+  const incomeCats = {};
+  ft.filter(t=>(t.tipo||'').toLowerCase()==='ingreso').forEach(t=>{
+    incomeCats[t.categoria||'Otros'] = (incomeCats[t.categoria||'Otros']||0) + Number(t.monto);
+  });
+  
+  const incomeCtx = document.getElementById('incomePieChart')?.getContext('2d');
+  if (incomePieChartInst) incomePieChartInst.destroy();
+  if (incomeCtx && Object.keys(incomeCats).length) {
+    incomePieChartInst = new Chart(incomeCtx, {
+      type: 'doughnut',
+      data: {
+        labels: Object.keys(incomeCats),
+        datasets: [{ 
+          data: Object.values(incomeCats), 
+          backgroundColor: Object.keys(incomeCats).map(k=>catColor(k)), 
+          borderWidth: 2, 
+          borderColor: '#fff' 
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { 
+          legend: { position: 'right', labels: { font: { size: 10 }, boxWidth: 10, padding: 8 } },
+          tooltip: { callbacks: { label: function(ctx) {
+            const total = ctx.dataset.data.reduce((a,b)=>a+b,0);
+            const pct = ((ctx.raw / total) * 100).toFixed(1);
+            return `${ctx.label}: ${fmt(ctx.raw)} Bs. (${pct}%)`;
+          }}}
+        }
+      }
+    });
+  } else if (incomeCtx) {
+    document.getElementById('incomePieChart').parentElement.innerHTML = '<div style="text-align:center;padding:40px;color:#6B7A99;">📭 Sin ingresos registrados</div>';
+  }
+
+  // Gráfico de EGRESOS por categoría
+  const expenseCats = {};
+  ft.filter(t=>(t.tipo||'').toLowerCase()==='egreso').forEach(t=>{
+    expenseCats[t.categoria||'Otros'] = (expenseCats[t.categoria||'Otros']||0) + Number(t.monto);
+  });
+  
+  const expenseCtx = document.getElementById('expensePieChart')?.getContext('2d');
+  if (expensePieChartInst) expensePieChartInst.destroy();
+  if (expenseCtx && Object.keys(expenseCats).length) {
+    expensePieChartInst = new Chart(expenseCtx, {
+      type: 'doughnut',
+      data: {
+        labels: Object.keys(expenseCats),
+        datasets: [{ 
+          data: Object.values(expenseCats), 
+          backgroundColor: Object.keys(expenseCats).map(k=>catColor(k)), 
+          borderWidth: 2, 
+          borderColor: '#fff' 
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { 
+          legend: { position: 'right', labels: { font: { size: 10 }, boxWidth: 10, padding: 8 } },
+          tooltip: { callbacks: { label: function(ctx) {
+            const total = ctx.dataset.data.reduce((a,b)=>a+b,0);
+            const pct = ((ctx.raw / total) * 100).toFixed(1);
+            return `${ctx.label}: ${fmt(ctx.raw)} Bs. (${pct}%)`;
+          }}}
+        }
+      }
+    });
+  } else if (expenseCtx) {
+    document.getElementById('expensePieChart').parentElement.innerHTML = '<div style="text-align:center;padding:40px;color:#6B7A99;">📭 Sin egresos registrados</div>';
   }
 }
 
@@ -695,7 +755,7 @@ function renderTable() {
     return `
     <div class="table-row">
       <span class="td-date">${fecha}</span>
-      <span class="td-id col-id">${t['id miembro']||t.id||'—'}</span>
+      <span class="td-id col-id">${t['id miembro'] || t.id_miembro || t.id || '—'}</span>
       <div>
         <div class="td-desc">${t.descripcion||'—'}</div>
         <div class="hash-cell" data-hash="${t.hash||''}" title="${t.hash||''}">${hash_short}</div>
@@ -706,52 +766,4 @@ function renderTable() {
       </div>
       <span><span class="badge ${es_ingreso?'ingreso':'egreso'}">${t.tipo||'—'}</span></span>
       <span class="td-amount ${es_ingreso?'pos':'neg'}">
-        ${es_ingreso?'+':'-'}${fmt(t.monto)}
-      </span>
-    </div>`;
-  }).join('');
-}
-
-// ── FILTER ──
-function setFilter(f, el) {
-  activeFilter = f;
-  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
-  el.classList.add('active');
-  renderTable();
-}
-
-// ── LOAD DATA ──
-async function loadData() {
-  try {
-    const res = await fetch(JSON_URL + '?t=' + Date.now());
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-
-    allTxns = data.transacciones || [];
-
-    // Header
-    document.getElementById('hero-date').textContent = data.ultima_actualizacion || '—';
-    document.getElementById('hash-global').textContent = data.hash_sha256 || '—';
-    document.getElementById('year').textContent = new Date().getFullYear();
-
-    renderTable();
-
-  } catch(e) {
-    document.getElementById('table-body').innerHTML = `
-      <div class="state-msg">
-        <span class="icon">⚠️</span>
-        No se pudo cargar el archivo <strong>estado.json</strong>.<br>
-        <small style="margin-top:8px;display:block;font-size:12px;">
-          Asegúrate de que el repositorio es público y el archivo existe.<br>
-          Error: ${e.message}
-        </small>
-      </div>`;
-    document.getElementById('hash-global').textContent = 'Error al cargar';
-  }
-}
-
-document.getElementById('year').textContent = new Date().getFullYear();
-loadData();
-</script>
-</body>
-</html>
+       
