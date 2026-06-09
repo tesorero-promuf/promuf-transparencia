@@ -1,8 +1,8 @@
 {
   "gremio": "PROMUF",
   "estado_venezuela": "Falcón",
-  "ultima_actualizacion": "2026-06-06",
-  "hash_sha256": "5aff5c4f6fec225daf5ddfa6d7540d22f01098c01d6396d4f2ec100baca83d92",
+  "ultima_actualizacion": "2026-06-09",
+  "hash_sha256": "12cb2455358868f35bd2ea9d3f3458ff839e97a47e17952453f86c07e08aef42",
   "transacciones": [
     {
       "fecha": "2026-06-05",
@@ -11,7 +11,7 @@
       "categoria": "Cuotas",
       "tipo": "Ingreso",
       "monto": 20000,
-      "saldo": 120000,
+      "": 20000,
       "hash": "a6b97a4598ab4a0340f2063dcde01a66756ff02be1bf034bd5d4e085e46aee5c"
     },
     {
@@ -21,7 +21,7 @@
       "categoria": "Cuotas",
       "tipo": "Ingreso",
       "monto": 15000,
-      "saldo": 135000,
+      "": 35000,
       "hash": "320a5a2871329d0fa93bc613d9ca80a977273000ed6c677e2f38a0ea15af9e0d"
     },
     {
@@ -31,7 +31,7 @@
       "categoria": "Cuotas",
       "tipo": "Ingreso",
       "monto": 15000,
-      "saldo": 135000,
+      "": 50000,
       "hash": "5270c92ec38829094f12dcceabb4764c59e78b17f419274057f8d80010bb2189"
     },
     {
@@ -41,7 +41,7 @@
       "categoria": "Cuotas",
       "tipo": "Ingreso",
       "monto": 15000,
-      "saldo": 135000,
+      "": 65000,
       "hash": "035f91084905f206ebcd978e6bef0c0edf2abc073fcd995c2c1068d354da14fc"
     }
   ]
