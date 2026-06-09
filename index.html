@@ -35,7 +35,6 @@
     min-height: 100vh;
   }
 
-  /* ── HERO HEADER ── */
   .hero {
     background: var(--navy);
     position: relative;
@@ -120,7 +119,6 @@
 
   .hero-badge::before { content: '●'; font-size: 8px; }
 
-  /* ── HASH BAR ── */
   .hash-bar {
     background: rgba(255,255,255,0.04);
     border-top: 1px solid rgba(255,255,255,0.06);
@@ -154,13 +152,11 @@
 
   .hash-link:hover { color: var(--gold2); }
 
-  /* ── MAIN ── */
   .main {
     max-width: 1100px; margin: 0 auto;
     padding: 32px 24px 64px;
   }
 
-  /* ── METRICS ── */
   .metrics {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -210,7 +206,6 @@
     color: var(--muted); margin-left: 4px;
   }
 
-  /* ── CHARTS ── */
   .charts-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -236,7 +231,6 @@
 
   .chart-wrap { position: relative; height: 200px; }
 
-  /* ── FILTERS ── */
   .filters-row {
     display: flex; align-items: center; gap: 8px;
     flex-wrap: wrap; margin-bottom: 16px;
@@ -279,7 +273,6 @@
     font-size: 14px; color: var(--muted); pointer-events: none;
   }
 
-  /* ── TABLE ── */
   .table-wrap {
     background: var(--card);
     border: 1px solid var(--border);
@@ -302,8 +295,6 @@
   }
 
   .th.right { text-align: right; }
-
-  .table-body { }
 
   .table-row {
     display: grid;
@@ -352,7 +343,6 @@
   .td-amount.pos { color: var(--income); }
   .td-amount.neg { color: var(--expense); }
 
-  /* ── HASH TOOLTIP ── */
   .hash-cell {
     font-family: 'DM Mono', monospace;
     font-size: 10px; color: var(--muted);
@@ -371,7 +361,6 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
   }
 
-  /* ── FOOTER ── */
   .footer {
     margin-top: 28px;
     display: flex; align-items: center; justify-content: space-between;
@@ -395,7 +384,6 @@
 
   .verify-btn:hover { background: var(--ocean); color: #fff; }
 
-  /* ── LOADING / ERROR ── */
   .state-msg {
     text-align: center; padding: 60px 20px;
     color: var(--muted); font-size: 15px;
@@ -403,7 +391,6 @@
 
   .state-msg .icon { font-size: 36px; margin-bottom: 12px; display: block; }
 
-  /* ── ANIMATIONS ── */
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(16px); }
     to   { opacity: 1; transform: translateY(0); }
@@ -414,7 +401,6 @@
     to   { opacity: 1; }
   }
 
-  /* ── RESPONSIVE ── */
   @media (max-width: 780px) {
     .table-head,
     .table-row {
@@ -432,7 +418,6 @@
 </head>
 <body>
 
-<!-- HERO -->
 <header class="hero">
   <div class="hero-waves"></div>
   <div class="hero-pattern"></div>
@@ -472,10 +457,8 @@
   </div>
 </header>
 
-<!-- MAIN -->
 <main class="main">
 
-  <!-- METRICS -->
   <div class="metrics" id="metrics">
     <div class="metric income">
       <span class="metric-icon">⬇</span>
@@ -499,7 +482,6 @@
     </div>
   </div>
 
-  <!-- CHARTS - DOS GRÁFICOS SEPARADOS -->
   <div class="charts-row">
     <div class="chart-card">
       <div class="chart-title">📥 Ingresos por categoría</div>
@@ -518,7 +500,6 @@
     </div>
   </div>
 
-  <!-- FILTERS -->
   <div class="filters-row" id="filters-row">
     <span class="filter-label">Filtrar:</span>
     <span class="pill active" onclick="setFilter('all', this)">Todos</span>
@@ -531,7 +512,6 @@
     </div>
   </div>
 
-  <!-- TABLE -->
   <div class="table-wrap">
     <div class="table-head">
       <span class="th">Fecha</span>
@@ -549,7 +529,6 @@
     </div>
   </div>
 
-  <!-- FOOTER -->
   <div class="footer">
     <span>
       Datos sincronizados desde Google Sheets → <strong>estado.json</strong> →
@@ -567,27 +546,24 @@
 </main>
 
 <script>
-// ══════════════════════════════════════════════
-//  CONFIGURACIÓN — cambia solo esta URL
-// ══════════════════════════════════════════════
 const JSON_URL = 'https://raw.githubusercontent.com/tesorero-promuf/promuf-transparencia/main/estado.json';
 
-// ══════════════════════════════════════════════
 const CAT_COLORS = {
   'Cuotas':          '#1A6FA8',
+  'Auto Gestion':    '#C0392B',
   'Infraestructura': '#D85A30',
   'Material musical':'#C89B3C',
   'Donación':        '#1D9E75',
   'Mantenimiento':   '#9B59B6',
   'Evento':          '#2AA9C8',
   'Administración':  '#888780',
-  'Auto Gestion':    '#C0392B',
   'Otros':           '#6B7A99'
 };
 
 function catColor(cat) {
   return CAT_COLORS[cat] || '#' + Math.abs(hashStr(cat)).toString(16).slice(0,6).padStart(6,'a');
 }
+
 function hashStr(s) {
   let h = 0;
   for (let i = 0; i < s.length; i++) h = Math.imul(31, h) + s.charCodeAt(i) | 0;
@@ -598,12 +574,10 @@ let allTxns = [];
 let activeFilter = 'all';
 let barChartInst, incomePieChartInst, expensePieChartInst;
 
-// ── FORMATO ──
 function fmt(n) {
   return Number(n).toLocaleString('es-VE');
 }
 
-// ── FILTERED ──
 function filtered() {
   const q = (document.getElementById('search')?.value || '').toLowerCase();
   return allTxns.filter(t => {
@@ -613,7 +587,6 @@ function filtered() {
   });
 }
 
-// ── METRICS ──
 function renderMetrics() {
   const ft = filtered();
   const income  = ft.filter(t => (t.tipo||'').toLowerCase() === 'ingreso').reduce((s,t) => s + Number(t.monto), 0);
@@ -624,11 +597,10 @@ function renderMetrics() {
   document.getElementById('m-count').textContent = ft.length;
 }
 
-// ── CHARTS ──
 function renderCharts() {
   const ft = filtered();
 
-  // Gráfico de barras (Ingresos vs Egresos por mes)
+  // Gráfico de barras mensual
   const months = [...new Set(allTxns.map(t => {
     const d = String(t.fecha); return d.substring(0,7);
   }))].sort();
@@ -664,10 +636,11 @@ function renderCharts() {
     });
   }
 
-  // Gráfico de INGRESOS por categoría
+  // INGRESOS por categoría
   const incomeCats = {};
   ft.filter(t=>(t.tipo||'').toLowerCase()==='ingreso').forEach(t=>{
-    incomeCats[t.categoria||'Otros'] = (incomeCats[t.categoria||'Otros']||0) + Number(t.monto);
+    const cat = t.categoria || 'Otros';
+    incomeCats[cat] = (incomeCats[cat]||0) + Number(t.monto);
   });
   
   const incomeCtx = document.getElementById('incomePieChart')?.getContext('2d');
@@ -700,10 +673,11 @@ function renderCharts() {
     document.getElementById('incomePieChart').parentElement.innerHTML = '<div style="text-align:center;padding:40px;color:#6B7A99;">📭 Sin ingresos registrados</div>';
   }
 
-  // Gráfico de EGRESOS por categoría
+  // EGRESOS por categoría
   const expenseCats = {};
   ft.filter(t=>(t.tipo||'').toLowerCase()==='egreso').forEach(t=>{
-    expenseCats[t.categoria||'Otros'] = (expenseCats[t.categoria||'Otros']||0) + Number(t.monto);
+    const cat = t.categoria || 'Otros';
+    expenseCats[cat] = (expenseCats[cat]||0) + Number(t.monto);
   });
   
   const expenseCtx = document.getElementById('expensePieChart')?.getContext('2d');
@@ -737,7 +711,6 @@ function renderCharts() {
   }
 }
 
-// ── TABLE ──
 function renderTable() {
   renderMetrics();
   renderCharts();
@@ -766,4 +739,44 @@ function renderTable() {
       </div>
       <span><span class="badge ${es_ingreso?'ingreso':'egreso'}">${t.tipo||'—'}</span></span>
       <span class="td-amount ${es_ingreso?'pos':'neg'}">
-       
+        ${es_ingreso?'+':'-'}${fmt(t.monto)}
+      </span>
+    </div>`;
+  }).join('');
+}
+
+function setFilter(f, el) {
+  activeFilter = f;
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  renderTable();
+}
+
+async function loadData() {
+  try {
+    const res = await fetch(JSON_URL + '?t=' + Date.now());
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    allTxns = data.transacciones || [];
+    document.getElementById('hero-date').textContent = data.ultima_actualizacion || '—';
+    document.getElementById('hash-global').textContent = data.hash_sha256 || '—';
+    document.getElementById('year').textContent = new Date().getFullYear();
+    renderTable();
+  } catch(e) {
+    document.getElementById('table-body').innerHTML = `
+      <div class="state-msg">
+        <span class="icon">⚠️</span>
+        No se pudo cargar el archivo <strong>estado.json</strong>.<br>
+        <small style="margin-top:8px;display:block;font-size:12px;">
+          Error: ${e.message}
+        </small>
+      </div>`;
+    document.getElementById('hash-global').textContent = 'Error al cargar';
+  }
+}
+
+document.getElementById('year').textContent = new Date().getFullYear();
+loadData();
+</script>
+</body>
+</html>
