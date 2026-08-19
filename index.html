@@ -717,7 +717,7 @@ async function loadSheets(){
         })).filter(m=>m.fecha&&m.monto);
         const localIds=new Set(movs.map(m=>m.fecha+'|'+m.concepto+'|'+m.monto+'|'+m.cuenta));
         const remoteSet=new Set(remotos.map(r=>r.fecha+'|'+r.concepto+'|'+r.monto+'|'+r.cuenta));
-        movs.forEach(m=>{ if(remoteSet.has(m.fecha+'|'+m.concepto+'|'+m.monto+'|'+m.cuenta)) m.enviado=true; });
+        movs.forEach(m=>{ m.enviado=remoteSet.has(m.fecha+'|'+m.concepto+'|'+m.monto+'|'+m.cuenta); });
         movs=movs.concat(remotos.filter(m=>!localIds.has(m.fecha+'|'+m.concepto+'|'+m.monto+'|'+m.cuenta)));
         persist();
         $('dot').className='dot dot-on'; $('stxt').textContent='Conectado a Google Sheets';
