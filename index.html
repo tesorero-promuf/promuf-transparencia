@@ -102,6 +102,10 @@
   .stat{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--r);padding:12px;text-align:center}
   .stat .sv{font-size:1.1rem;font-weight:800}
   .stat .sl2{font-size:.66rem;color:var(--tx2);text-transform:uppercase;letter-spacing:.3px;margin-top:2px}
+  #pubBanner{display:none;background:rgba(167,139,250,.15);color:#c4b5fd;text-align:center;padding:8px 14px;font-size:.74rem;font-weight:600;border-bottom:1px solid var(--bd)}
+  body.pub-mode #pubBanner{display:block}
+  body.pub-mode #movFormWrap{display:none}
+  body.pub-mode .no-pub{display:none!important}
   .bar-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:.74rem}
   .bar-row .bl{width:150px;color:var(--tx2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .bar-row .bw{flex:1;height:18px;background:var(--bg);border-radius:5px;overflow:hidden}
@@ -119,9 +123,12 @@
   </div>
   <div class="hd-r">
     <div class="st"><span class="dot dot-off" id="dot"></span><span id="stxt">Sin conexión a Google Sheets</span></div>
+    <button class="btn bt" onclick="shareWhatsApp()">📲 Compartir</button>
     <button class="btn bo" onclick="openConfig()">⚙ Config</button>
   </div>
 </div>
+
+<div id="pubBanner">🔒 Modo público · solo lectura · datos de transparencia financiera de PROMUF</div>
 
 <div class="tabs" id="tabs">
   <button class="tab on" data-t="resumen" onclick="go('resumen')">Resumen</button>
@@ -173,7 +180,7 @@
 
 <!-- ═══════════ MOVIMIENTOS ═══════════ -->
 <div class="tc" id="tc-mov">
-  <div class="cs">
+  <div class="cs" id="movFormWrap">
     <h3>Registrar movimiento</h3>
     <div class="row2">
       <div class="fg2"><label>Fecha</label><input class="in" type="date" id="mFecha"></div>
@@ -195,7 +202,7 @@
       <div class="fg2"><label>Agremiado</label><input class="in" id="mAgremiado" placeholder="Nombre o código PMF-26-0XX"></div>
       <div class="fg2"><label>N° soporte</label><input class="in" id="mSoporte" placeholder="PM-123 / Recibo / Factura"></div>
     </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <div style="display:flex;gap:8px;flex-wrap:wrap" class="no-pub">
       <button class="btn bt" onclick="addMov()">＋ Guardar movimiento</button>
       <button class="btn bo" onclick="exportCSV()">⬇ Exportar CSV para Google Sheets</button>
       <button class="btn bo" onclick="copyCSV()">⧉ Copiar CSV</button>
@@ -316,6 +323,34 @@ function saveConfig(){
   localStorage.setItem('promuf_cfg', JSON.stringify(cfg));
   closeConfig(); testCfg(); renderAll();
   toast('Configuración guardada','s');
+}
+
+/* ═══════════════ MODO PÚBLICO Y COMPARTIR ═══════════════ */
+function readQuery(){
+  try{
+    const p=new URLSearchParams(location.search);
+    if(p.get('pub')==='1'){ document.body.classList.add('pub-mode'); }
+    const c={};
+    if(p.get('mov')) c.mov=p.get('mov');
+    if(p.get('fondos')) c.fondos=p.get('fondos');
+    if(p.get('conc')) c.conc=p.get('conc');
+    if(Object.keys(c).length){ cfg={...cfg,...c}; localStorage.setItem('promuf_cfg',JSON.stringify(cfg)); }
+  }catch(e){}
+}
+function currentPublicLink(){
+  const u=location.origin+location.pathname;
+  const p=new URLSearchParams();
+  p.set('pub','1');
+  if(cfg.mov) p.set('mov',cfg.mov);
+  if(cfg.fondos) p.set('fondos',cfg.fondos);
+  if(cfg.conc) p.set('conc',cfg.conc);
+  return u+'?'+p.toString();
+}
+function shareWhatsApp(){
+  if(!cfg.mov){ toast('Primero configura las URLs publicadas en ⚙ Config para que el enlace traiga los datos','e'); return; }
+  const link=currentPublicLink();
+  const msg='📊 Transparencia financiera PROMUF — dashboard público (solo lectura) con saldos por fondo, plan de cuentas y movimientos en tiempo real:\n'+link;
+  window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
 }
 
 /* ═══════════════ CONEXIÓN GOOGLE SHEETS (publicado = solo lectura) ═══════════════ */
@@ -472,7 +507,7 @@ function renderMov(){
   const rows=[...movs].sort((a,b)=>b.fecha.localeCompare(a.fecha));
   $('movCount').textContent=rows.length+' registros';
   $('movNote').textContent='Guardados en tu navegador (localStorage). Exporta el CSV y pégalo en la pestaña Movimientos de la hoja "Tesoreria PROMUF" para la base de datos oficial.';
-  $('movTbl').innerHTML = rows.length ? `<table class="tbl"><tr><th>Fecha</th><th>Concepto</th><th>Cuenta</th><th>Fondo</th><th>Mon</th><th class="num">Monto</th><th></th></tr>`+
+  $('movTbl').innerHTML = rows.length ? `<table class="tbl"><tr><th>Fecha</th><th>Concepto</th><th>Cuenta</th><th>Fondo</th><th>Mon</th><th class="num">Monto</th>${document.body.classList.contains('pub-mode')?'':'<th></th>'}</tr>`+
     rows.map(m=>`<tr>
       <td>${m.fecha}</td>
       <td>${m.concepto}${m.evento?`<div class="note" style="margin:0">🎪 ${m.evento}</div>`:''}</td>
@@ -480,7 +515,7 @@ function renderMov(){
       <td><span class="badge b-gray">${NOM_FONDO[m.fondo]||m.fondo}</span></td>
       <td>${m.moneda}</td>
       <td class="num ${m.tipo==='Egreso'?'neg':'pos'}">${m.tipo==='Egreso'?'−':'+'} ${fmt(m.monto)}</td>
-      <td><button class="btn bs br" onclick="delMov('${m.id}')">✕</button></td>
+      ${document.body.classList.contains('pub-mode')?'':`<td><button class="btn bs br" onclick="delMov('${m.id}')">✕</button></td>`}
     </tr>`).join('')+'</table>' : '<div class="note" style="text-align:center;padding:14px">Sin movimientos registrados.</div>';
 }
 function delMov(id){ movs=movs.filter(m=>m.id!==id); persist(); renderMov(); renderResumen(); }
@@ -599,6 +634,7 @@ async function loadSheets(){
 function renderAll(){ renderResumen(); renderMov(); renderFondos(); renderConc(); }
 
 /* init */
+readQuery();
 fillCuentas(); $('mFecha').value=hoy();
 renderPlan(); renderAll();
 loadSheets();
