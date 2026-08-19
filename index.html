@@ -131,12 +131,12 @@
 <div id="pubBanner">🔒 Modo público · solo lectura · datos de transparencia financiera de PROMUF</div>
 
 <div class="tabs" id="tabs">
-  <button class="tab on" data-t="resumen" onclick="go('resumen')">Resumen</button>
-  <button class="tab" data-t="plan" onclick="go('plan')">Plan de Cuentas</button>
+  <button class="tab on no-pub" data-t="resumen" onclick="go('resumen')">Resumen</button>
+  <button class="tab no-pub" data-t="plan" onclick="go('plan')">Plan de Cuentas</button>
   <button class="tab" data-t="mov" onclick="go('mov')">Movimientos</button>
   <button class="tab" data-t="fondos" onclick="go('fondos')">Fondos</button>
   <button class="tab" data-t="conc" onclick="go('conc')">Conciliación</button>
-  <button class="tab" data-t="guia" onclick="go('guia')">Guía de importación</button>
+  <button class="tab no-pub" data-t="guia" onclick="go('guia')">Guía de importación</button>
 </div>
 
 <!-- ═══════════ RESUMEN ═══════════ -->
@@ -337,7 +337,7 @@ async function loadConfigJson(){
 function readQuery(){
   try{
     const p=new URLSearchParams(location.search);
-    if(p.get('pub')==='1'){ document.body.classList.add('pub-mode'); }
+    if(p.get('pub')==='1'){ document.body.classList.add('pub-mode'); go('mov'); }
     const c={};
     if(p.get('mov')) c.mov=p.get('mov');
     if(p.get('fondos')) c.fondos=p.get('fondos');
@@ -640,7 +640,7 @@ async function loadSheets(){
   $('dot').className='dot dot-off'; $('stxt').textContent='Conectando…';
   await loadConfigJson();
   if(!document.body.classList.contains('pub-mode') && Object.keys(cfg).length===0 && cfgRemote && cfgRemote.mov){
-    document.body.classList.add('pub-mode');
+    document.body.classList.add('pub-mode'); go('mov');
   }
   const e=effCfg();
   try{
