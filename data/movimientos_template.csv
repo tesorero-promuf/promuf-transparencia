@@ -1,0 +1,3 @@
+fecha,codigo_cuenta,cuenta,fondo,moneda,monto,tipo_movimiento,concepto,evento,agremiado,soporte,usuario,estado,notas
+2026-08-01,4.1.01.02,Cuota mensual de membresía,Membresia,USDT,5.00,Ingreso,Cuota mensual agosto 2026,,Figueroa Boecio,PM-123456,Tesorero,Registrado,
+2026-08-02,5.2.01.00,Honorarios de músicos,Autogestion,USD,100.00,Egreso,Honorarios evento Festival Falcón,Sonido y Arte 2026,Espina Esdiover,Recibo 001,Tesorero,Registrado,

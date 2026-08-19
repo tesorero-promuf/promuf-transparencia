@@ -1,0 +1,5 @@
+codigo_fondo,nombre_fondo,descripcion,base_legal,moneda_principal,resguardo_multimoneda_min,saldo_inicial_usd,regla_uso
+F1,Fondo Cuotas de Membresía,Recaudación de cuotas mensuales de los asociados para gastos de funcionamiento,Art. 6.c Estatutos / Art. 5.1 Reglamento Contraloría,USDT,0%,0.00,Ingresos por cuotas indexadas a USDT
+F2,Fondo de Salud y Emergencias,Cobertura médica inmediata de músicos y grupo familiar directo (cónyuge, hijos y padres),Art. 6.d Estatutos / Art. 5.2 Reglamento Contraloría,USD,50%,0.00,Al menos 50% resguardado en moneda extranjera o USDT
+F3,Fondo de Autogestión Gremial,Excedentes de eventos propios de PROMUF. Orden de pagos: 1ro honorarios músicos 100%, 2do gastos operativos con factura, 3ro excedente al fondo,Art. 6-A Estatutos / Art. 6 Reglamento Contraloría,USD,0%,0.00,Excedentes de eventos de autogestión
+F4,Fondo de Ahorro y Operaciones,Reservas de ahorro y operaciones para la sostenibilidad del gremio,Art. 6 Estatutos / Art. 5.1 Reglamento Contraloría,USD,0%,0.00,Reservas y operaciones

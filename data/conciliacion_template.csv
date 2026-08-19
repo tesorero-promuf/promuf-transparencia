@@ -1,0 +1,3 @@
+periodo,fecha_conciliacion,codigo_cuenta,cuenta,moneda,saldo_libros,saldo_banco,diferencia,conciliado,observaciones
+2026-07,2026-08-05,1.1.01.03,Banco Bs - Cuenta Corriente ASOPROMUF,Bs,0.00,0.00,0.00,No,
+2026-07,2026-08-05,1.1.01.07,Binance - USDT,USDT,0.00,0.00,0.00,No,
