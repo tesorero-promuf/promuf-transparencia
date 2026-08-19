@@ -50,6 +50,18 @@ function doGet(e) {
   return responder({ ok: true, msg: 'API Tesorería PROMUF activa' });
 }
 
+/**
+ * AUTORIZACIÓN (solo una vez):
+ * Selecciona esta función en el editor y pulsa ▶ Ejecutar (Run).
+ * Acepta: Elegir cuenta → Revisar permisos → Avanzado →
+ * "Ir a ... (no seguro)" → Permitir.
+ * Sin esto, la API responde PERMISSION_DENIED.
+ */
+function autorizar() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  return 'OK: ' + (ss ? ss.getName() : 'sin acceso');
+}
+
 function responder(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj))
     .setMimeType(ContentService.MimeType.JSON);
