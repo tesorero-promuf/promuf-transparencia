@@ -46,6 +46,18 @@ Las URLs publicadas son largas, por eso el enlace corto sale del archivo `config
 2. Commit the change (botón verde *Commit changes*).
 3. En el dashboard pulsa **🔗 Copiar enlace**: te copia el enlace corto `https://tesorero-promuf.github.io/promuf-transparencia/?pub=1` listo para pegar en el grupo. Quien lo abra ve la versión pública de solo lectura.
 
+### Envío automático de movimientos (Apps Script)
+
+Para que cada registro del dashboard se escriba **solo** en la pestaña *Movimientos* (sin exportar CSV manualmente):
+
+1. En la hoja "Tesoreria PROMUF": **Extensiones → Apps Script**.
+2. Pega el contenido de `scripts/agregar_movimiento.gs` (borra lo que venga por defecto).
+3. **Implementar → Nueva implementación → Aplicación web**:
+   - *Ejecutar como*: Tú (tesoreropromuf@gmail.com)
+   - *Quién tiene acceso*: **Cualquier persona**
+4. Copia la URL (`https://script.google.com/macros/s/…/exec`) y pégala en el dashboard (**⚙ Config → URL API Apps Script**) o en `config.json` (`"api"`).
+5. Desde ahí, cada movimiento guardado se envía automáticamente a la hoja; la versión publicada lo refleja en pocos minutos.
+
 ### Flujo diario del Tesorero
 
 1. Registrar el movimiento en el dashboard (fecha, fondo, cuenta del plan, moneda, monto, concepto, soporte).

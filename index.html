@@ -270,7 +270,8 @@
     <div class="fg2"><label>URL CSV publicada — pestaña Movimientos</label><input class="in" id="cfgMov" placeholder="https://docs.google.com/spreadsheets/d/e/…/pub?gid=0&amp;single=true&amp;output=csv"></div>
     <div class="fg2"><label>URL CSV publicada — pestaña Fondos</label><input class="in" id="cfgFondos" placeholder="…"></div>
     <div class="fg2"><label>URL CSV publicada — pestaña Conciliación</label><input class="in" id="cfgConc" placeholder="…"></div>
-    <div class="note">Para publicar: <i>Archivo → Compartir → Publicar en la web</i>, elige la pestaña y formato CSV, copia la URL de cada pestaña. Las hojas publicadas permiten lectura sin clave (solo lectura).</div>
+    <div class="fg2"><label>URL API Apps Script (envío automático de movimientos — opcional)</label><input class="in" id="cfgApi" placeholder="https://script.google.com/macros/s/…/exec"></div>
+    <div class="note">Para publicar: <i>Archivo → Compartir → Publicar en la web</i>, elige la pestaña y formato CSV, copia la URL de cada pestaña. Las hojas publicadas permiten lectura sin clave (solo lectura).<br><br><b>Envío automático:</b> si pegas la URL de la API (ver <code>scripts/agregar_movimiento.gs</code>), cada movimiento guardado se escribe solo en la pestaña <i>Movimientos</i>. Sin API, el flujo es manual: Exportar CSV → pegar en la hoja.</div>
     <div class="note" style="margin-top:8px;padding:10px;background:rgba(230,196,104,.08);border-radius:8px">📌 <b>Enlace corto para compartir:</b> edita el archivo <code>config.json</code> del repositorio (en GitHub: abre el archivo → lápiz → pega las URLs → Commit) y el botón 🔗 Copiar enlace dará <code>…/promuf-transparencia/?pub=1</code>. Si el archivo está vacío, el botón copiará el enlace largo con las URLs incluidas.</div>
     <div style="display:flex;gap:8px;margin-top:14px">
       <button class="btn bt" onclick="saveConfig()">Guardar y conectar</button>
@@ -315,12 +316,12 @@ function go(t){
   document.querySelectorAll('.tc').forEach(c=>c.classList.toggle('on', c.id==='tc-'+t));
 }
 function openConfig(){
-  $('cfgMov').value=cfg.mov||''; $('cfgFondos').value=cfg.fondos||''; $('cfgConc').value=cfg.conc||'';
+  $('cfgMov').value=cfg.mov||''; $('cfgFondos').value=cfg.fondos||''; $('cfgConc').value=cfg.conc||''; $('cfgApi').value=cfg.api||'';
   $('moConfig').classList.add('on');
 }
 function closeConfig(){ $('moConfig').classList.remove('on'); }
 function saveConfig(){
-  cfg={mov:$('cfgMov').value.trim(), fondos:$('cfgFondos').value.trim(), conc:$('cfgConc').value.trim()};
+  cfg={mov:$('cfgMov').value.trim(), fondos:$('cfgFondos').value.trim(), conc:$('cfgConc').value.trim(), api:$('cfgApi').value.trim()};
   localStorage.setItem('promuf_cfg', JSON.stringify(cfg));
   closeConfig(); testCfg(); renderAll();
   toast('Configuración guardada','s');
@@ -527,14 +528,32 @@ function addMov(){
   };
   if(!m.monto){ toast('Indica el monto','e'); return; }
   if(!m.concepto){ toast('Indica el concepto','e'); return; }
-  movs.push(m); persist(); renderMov(); renderResumen(); toast('Movimiento registrado','s');
+  movs.push(m); persist(); renderMov(); renderResumen(); renderFondos();
+  sendToSheet(m).then(ok=>{
+    toast(ok ? 'Movimiento guardado y ENVIADO a la hoja' : 'Movimiento guardado localmente (sin API conectada)',
+          ok ? 's' : 'i');
+  });
   $('mMonto').value=''; $('mConcepto').value='';
+}
+async function sendToSheet(m){
+  const api=effCfg().api;
+  if(!api) return false;
+  try{
+    const c=CATALOGO.find(x=>x.codigo===m.cuenta);
+    const r=await fetch(api,{method:'POST',body:JSON.stringify({...m, cuenta_nombre:c?c.cuenta:'', usuario:'Tesorero'})});
+    const j=await r.json();
+    if(j&&j.ok){ m.enviado=true; persist(); return true; }
+    return false;
+  }catch(e){ return false; }
 }
 function persist(){ localStorage.setItem('promuf_movs', JSON.stringify(movs)); }
 function renderMov(){
   const rows=[...movs].sort((a,b)=>b.fecha.localeCompare(a.fecha));
   $('movCount').textContent=rows.length+' registros';
-  $('movNote').textContent='Guardados en tu navegador (localStorage). Exporta el CSV y pégalo en la pestaña Movimientos de la hoja "Tesoreria PROMUF" para la base de datos oficial.';
+  const apiOn=!!effCfg().api;
+  $('movNote').textContent = apiOn
+    ? 'Cada movimiento guardado se envía automáticamente a la pestaña Movimientos de la hoja "Tesoreria PROMUF" (vía API).'
+    : 'Guardados en tu navegador. Exporta el CSV y pégalo en la pestaña Movimientos de la hoja, o conecta la API (⚙ Config) para envío automático.';
   $('movTbl').innerHTML = rows.length ? `<table class="tbl"><tr><th>Fecha</th><th>Concepto</th><th>Cuenta</th><th>Fondo</th><th>Mon</th><th class="num">Monto</th>${document.body.classList.contains('pub-mode')?'':'<th></th>'}</tr>`+
     rows.map(m=>`<tr>
       <td>${m.fecha}</td>
