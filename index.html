@@ -206,9 +206,6 @@
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap" class="no-pub">
       <button class="btn bt" onclick="addMov()">＋ Guardar movimiento</button>
-      <button class="btn bo" onclick="exportCSV()">⬇ Exportar CSV para Google Sheets</button>
-      <button class="btn bo" onclick="copyCSV()">⧉ Copiar CSV</button>
-      <button class="btn bo" onclick="importCSV()">📥 Importar CSV</button>
       <button class="btn br" onclick="clearMov()">🗑 Limpiar local</button>
     </div>
     <div class="note" id="movNote"></div>
@@ -260,7 +257,7 @@
       <b>3. Importa los CSV de este repositorio:</b> en cada pestaña usa <i>Archivo → Importar → Subir</i> y elige el archivo de la carpeta <code>data/</code> (movimientos_template.csv, fondos.csv, conciliacion_template.csv, socios_template.csv) y <code>plan_de_cuentas.csv</code> en su pestaña.<br>
       <b>4. Publica la hoja:</b> <i>Archivo → Compartir → Publicar en la web</i> → selecciona cada pestaña → formato <b>CSV</b> → copia la URL de cada pestaña.<br>
       <b>5. Pega las URLs aquí:</b> botón ⚙ Config → guarda → el dashboard se conecta (solo lectura) y verás saldos, fondos y movimientos en vivo.<br>
-      <b>6. Flujo de trabajo diario:</b> registras movimientos aquí → <i>Exportar CSV</i> → pegas las filas al final de la pestaña <i>Movimientos</i> en la hoja → la hoja queda como base de datos oficial y el dashboard la refleja al publicarse.
+      <b>6. Flujo de trabajo diario:</b> registras movimientos aquí → la API los escribe solos en la pestaña <i>Movimientos</i> de la hoja → la hoja queda como base de datos oficial y el dashboard la refleja al publicarse.
     </div>
     <h3 style="margin-top:18px">Reglas contables que cumple este sistema</h3>
     <div class="note" style="color:var(--tx2)">
@@ -284,7 +281,7 @@
     <div class="fg2"><label>URL CSV publicada — pestaña Fondos</label><input class="in" id="cfgFondos" placeholder="…"></div>
     <div class="fg2"><label>URL CSV publicada — pestaña Conciliación</label><input class="in" id="cfgConc" placeholder="…"></div>
     <div class="fg2"><label>URL API Apps Script (envío automático de movimientos — opcional)</label><input class="in" id="cfgApi" placeholder="https://script.google.com/macros/s/…/exec"></div>
-    <div class="note">Para publicar: <i>Archivo → Compartir → Publicar en la web</i>, elige la pestaña y formato CSV, copia la URL de cada pestaña. Las hojas publicadas permiten lectura sin clave (solo lectura).<br><br><b>Envío automático:</b> si pegas la URL de la API (ver <code>scripts/agregar_movimiento.gs</code>), cada movimiento guardado se escribe solo en la pestaña <i>Movimientos</i>. Sin API, el flujo es manual: Exportar CSV → pegar en la hoja.</div>
+    <div class="note">Para publicar: <i>Archivo → Compartir → Publicar en la web</i>, elige la pestaña y formato CSV, copia la URL de cada pestaña. Las hojas publicadas permiten lectura sin clave (solo lectura).<br><br><b>Envío automático:</b> con la URL de la API (ver <code>scripts/agregar_movimiento.gs</code>) en <code>config.json</code>, cada movimiento guardado se escribe solo en la pestaña <i>Movimientos</i> y queda blindado 🔒.</div>
     <div class="note" style="margin-top:8px;padding:10px;background:rgba(230,196,104,.08);border-radius:8px">📌 Las URLs del <code>config.json</code> del repositorio tienen prioridad sobre estas al abrir la versión online; este formulario se usa cuando no hay <code>config.json</code> o para probar otra hoja. El campo de la API sí se puede sobrescribir localmente. Si pegaste enlaces <code>pubhtml</code>, se convierten a CSV automáticamente.</div>
     <div style="display:flex;gap:8px;margin-top:14px">
       <button class="btn bt" onclick="saveConfig()">Guardar y conectar</button>
@@ -589,7 +586,7 @@ function renderMov(){
   const apiOn=!!effCfg().api;
   $('movNote').textContent = apiOn
     ? 'Blindaje: los movimientos enviados a la hoja (🔒) NO se pueden eliminar desde aquí; el ✕ solo borra borradores locales no enviados. La hoja conserva historial de versiones y el Comité de Contraloría audita trimestralmente (Art. 5 R.CC).'
-    : 'Sin API conectada: estos registros son borradores locales (exporta el CSV y pégalo en la hoja para fijarlos). Con la API activa, cada registro enviado queda blindado con 🔒 y no puede borrarse.';
+    : 'Sin API conectada: estos registros son borradores locales y no se envían a la hoja. Conecta la API en ⚙ Config para que cada registro enviado quede blindado con 🔒 y no pueda borrarse.';
   $('movTbl').innerHTML = rows.length ? `<table class="tbl"><tr><th>Fecha</th><th>Concepto</th><th>Cuenta</th><th>Fondo</th><th>Mon</th><th class="num">Monto</th>${document.body.classList.contains('pub-mode')?'':`<th>${apiOn?'Blindaje':'Estado'}</th>`}</tr>`+
     rows.map(m=>`<tr>
       <td>${m.fecha}</td>
@@ -614,58 +611,6 @@ function clearMov(){
   if(!confirm('¿Eliminar '+drafts.length+' borrador(es) local(es) no enviado(s)? Los que ya están en la hoja (🔒) se conservan.')) return;
   movs=movs.filter(m=>m.enviado); persist(); renderMov(); renderResumen(); toast('Borradores locales eliminados','i');
 }
-function toCSV(rows, cols){
-  const esc=x=>{ x=String(x??''); return /[",\n]/.test(x)?'"'+x.replace(/"/g,'""')+'"':x; };
-  return [cols.join(',')].concat(rows.map(r=>cols.map(c=>esc(r[c])).join(','))).join('\n');
-}
-const MOV_COLS=['fecha','cuenta','cuenta_nombre','fondo','moneda','monto','tipo_movimiento','concepto','evento','agremiado','soporte'];
-function exportCSV(){
-  const rows=movs.map(m=>{
-    const c=CATALOGO.find(x=>x.codigo===m.cuenta);
-    return {...m, cuenta_nombre:c?c.cuenta:'', tipo_movimiento:m.tipo};
-  });
-  const csv=toCSV(rows, MOV_COLS);
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));
-  a.download='promuf_movimientos.csv'; a.click();
-  toast('CSV exportado: promuf_movimientos.csv','s');
-}
-function copyCSV(){
-  const rows=movs.map(m=>{const c=CATALOGO.find(x=>x.codigo===m.cuenta); return {...m,cuenta_nombre:c?c.cuenta:'',tipo_movimiento:m.tipo};});
-  navigator.clipboard.writeText(toCSV(rows,MOV_COLS)).then(()=>toast('CSV copiado al portapapeles','s'),()=>toast('No se pudo copiar','e'));
-}
-function importCSV(){
-  const ta=document.createElement('textarea'); ta.className='ta';
-  ta.placeholder='Pega aquí las filas CSV (con encabezado) para importarlas…';
-  const modal=document.createElement('div'); modal.className='mo on';
-  modal.innerHTML='<div class="ml2"><button class="mx" onclick="this.parentElement.parentElement.remove()">✕</button><h2>Importar CSV</h2>';
-  modal.querySelector('.ml2').appendChild(ta);
-  const btn=document.createElement('button'); btn.className='btn bt'; btn.textContent='Importar';
-  btn.onclick=()=>{
-    try{
-      const rows=rowsToObj(parseCSV(ta.value));
-      if(!rows.length){ toast('No se encontraron filas','e'); return; }
-      let n=0;
-      rows.forEach(r=>{
-        if(!r.fecha||!r.monto) return;
-        const c=CATALOGO.find(x=>x.codigo===(r.codigo_cuenta||r.cuenta));
-        movs.push({
-          id:Date.now()+''+Math.floor(Math.random()*9999),
-          fecha:r.fecha, fondo:r.fondo||'General',
-          cuenta:c?c.codigo:(r.codigo_cuenta||r.cuenta||''),
-          moneda:r.moneda||(c?c.moneda:'USD'),
-          tipo:r.tipo_movimiento||r.tipo||'Ingreso',
-          monto:Math.abs(Number(r.monto)), concepto:r.concepto||'',
-          evento:r.evento||'', agremiado:r.agremiado||'', soporte:r.soporte||''
-        }); n++;
-      });
-      persist(); renderMov(); renderResumen(); modal.remove(); toast(n+' movimientos importados','s');
-    }catch(e){ toast('Error: '+e.message,'e'); }
-  };
-  modal.querySelector('.ml2').appendChild(btn);
-  document.body.appendChild(modal);
-}
-
 /* ═══════════════ FONDOS ═══════════════ */
 function renderFondos(){
   const {s}=saldosPorFondo();

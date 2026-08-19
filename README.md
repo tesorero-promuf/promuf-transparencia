@@ -60,9 +60,8 @@ Para que cada registro del dashboard se escriba **solo** en la pestaña *Movimie
 
 ### Flujo diario del Tesorero
 
-1. Registrar el movimiento en el dashboard (fecha, fondo, cuenta del plan, moneda, monto, concepto, soporte).
-2. **Exportar CSV** (o Copiar CSV) y pegar las filas al final de la pestaña *Movimientos* de la hoja.
-3. La hoja es la base de datos oficial; el dashboard lee la versión publicada (solo lectura).
+1. Registrar el movimiento en el dashboard (fecha, fondo, cuenta del plan, moneda, monto, concepto, soporte); la API lo escribe solo en la hoja.
+2. La hoja es la base de datos oficial; el dashboard lee la versión publicada (solo lectura) y la auditoría detecta cualquier alteración.
 
 ## Obligaciones del Tesorero (Art. 15 Estatutos)
 
