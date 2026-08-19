@@ -76,7 +76,7 @@ Para que cada registro del dashboard se escriba **solo** en la pestaña *Movimie
 
 ## Reglas contables claves
 
-- **4 fondos**: Cuotas de Membresía (F1), Salud y Emergencias (F2), Autogestión Gremial (F3), Ahorro y Operaciones (F4) — auditados trimestralmente por el Comité de Contraloría.
+- **5 fondos**: Cuotas de Membresía (F1), Salud y Emergencias (F2), Autogestión Gremial (F3), Ahorro (F4) y Operaciones (F5) — F4 y F5 son independientes entre sí; todos auditados trimestralmente por el Comité de Contraloría.
 - **Fondo de Salud**: mínimo **50%** en moneda extranjera o USDT (Art. 6.d).
 - **Cuotas**: indexadas al dólar **USDT** (Art. 6.c).
 - **Eventos (Art. 6-A)**: 1º honorarios de músicos 100% (sin retenciones indebidas), 2º gastos operativos con factura/recibo legalizado, 3º excedente al Fondo de Autogestión.

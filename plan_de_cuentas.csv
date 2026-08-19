@@ -27,8 +27,8 @@ codigo,cuenta,grupo,tipo,naturaleza,moneda,fondo,descripcion
 1.1.04.04,Fondo de Salud y Emergencias - USD/USDT,Activo,AC,D,USD,Salud,Resguardo en divisas/crypto del Fondo de Salud. Al menos 50% debe estar aquí (Art. 6.d Estatutos / Reglamento Contraloría Art. 5.2).
 1.1.04.05,Fondo de Autogestión Gremial - Bs,Activo,AC,D,Bs,Autogestion,Excedentes de eventos propios de PROMUF en bolívares (Art. 6-A).
 1.1.04.06,Fondo de Autogestión Gremial - USD/USDT,Activo,AC,D,USD,Autogestion,Excedentes de eventos propios en divisas/crypto.
-1.1.04.07,Fondo de Ahorro y Operaciones - Bs,Activo,AC,D,Bs,Operaciones,Reservas de ahorro y operaciones de la asociación en bolívares.
-1.1.04.08,Fondo de Ahorro y Operaciones - USD/USDT,Activo,AC,D,USD,Operaciones,Reservas de ahorro y operaciones en divisas/crypto.
+1.1.04.07,Fondo de Ahorro - Bs,Activo,AC,D,Bs,Ahorro,Reservas de ahorro del gremio en bolívares.
+1.1.04.08,Fondo de Ahorro - USD/USDT,Activo,AC,D,USD,Ahorro,Reservas de ahorro en divisas/crypto.
 1.2.00.00,ACTIVO NO CORRIENTE,Activo,ANC,D,Mixta,NA,Bienes y derechos de permanencia mayor a un año.
 1.2.01.00,PROPIEDAD PLANTA Y EQUIPO,Activo,ANC,D,Mixta,NA,Infraestructura y equipamiento institucional.
 1.2.01.01,Equipos de sonido e iluminación,Activo,ANC,D,Mixta,General,"Tarimas, sistemas de sonido e iluminación de propiedad del gremio."
@@ -40,7 +40,7 @@ codigo,cuenta,grupo,tipo,naturaleza,moneda,fondo,descripcion
 1.2.03.00,OTROS ACTIVOS NO CORRIENTES,Activo,ANC,D,Mixta,NA,Otros activos de largo plazo.
 1.2.03.01,Depósitos y fianzas entregadas,Activo,ANC,D,Mixta,General,Depósitos en garantía por arrendamientos o servicios.
 1.2.03.02,Derechos y marcas (SAPI),Activo,ANC,D,Mixta,General,Registros de propiedad intelectual y marca ante el SAPI.
-1.2.03.03,Criptoactivos de reserva,Activo,ANC,D,USDT,Operaciones,Reservas cripto de largo plazo (Art. 6 Resguardo Patrimonial).
+1.2.03.03,Criptoactivos de reserva,Activo,ANC,D,USDT,Ahorro,Reservas cripto de largo plazo del Fondo de Ahorro (Art. 6 Resguardo Patrimonial).
 2.0.00.00,PASIVO,Pasivo,PC,A,Mixta,NA,Obligaciones de la asociación con terceros.
 2.1.00.00,PASIVO CORRIENTE,Pasivo,PC,A,Mixta,NA,Obligaciones exigibles en menos de un año.
 2.1.01.00,CUENTAS Y DOCUMENTOS POR PAGAR,Pasivo,PC,A,Mixta,NA,"Deudas con proveedores, contratistas y agremiados."
@@ -71,10 +71,10 @@ codigo,cuenta,grupo,tipo,naturaleza,moneda,fondo,descripcion
 3.3.01.00,Fondo patrimonial Cuotas de Membresía,Patrimonio,P,A,Mixta,Membresia,Contrapartida del Fondo de Cuotas de Membresía.
 3.3.02.00,Fondo patrimonial Salud y Emergencias,Patrimonio,P,A,Mixta,Salud,Contrapartida del Fondo de Salud y Emergencias.
 3.3.03.00,Fondo patrimonial Autogestión Gremial,Patrimonio,P,A,Mixta,Autogestion,Contrapartida del Fondo de Autogestión Gremial.
-3.3.04.00,Fondo patrimonial Ahorro y Operaciones,Patrimonio,P,A,Mixta,Operaciones,Contrapartida del Fondo de Ahorro y Operaciones.
+3.3.04.00,Fondo patrimonial Ahorro,Patrimonio,P,A,Mixta,Ahorro,Contrapartida del Fondo de Ahorro.
 3.4.00.00,RESERVAS,Patrimonio,P,A,Mixta,NA,Reservas constituidas por disposición estatutaria o de Asamblea.
 3.4.01.00,Reserva multimoneda (Fondo de Salud),Patrimonio,P,A,USD,Salud,Reserva equivalente al 50% del Fondo de Salud en moneda extranjera o USDT (Art. 6.d / Reglamento Contraloría Art. 5.2).
-3.4.02.00,Reserva de contingencia,Patrimonio,P,A,Mixta,Operaciones,Reserva para imprevistos operativos.
+3.4.02.00,Reserva de contingencia,Patrimonio,P,A,Mixta,Operaciones,Reserva para imprevistos operativos (Fondo de Operaciones).
 3.4.03.00,Reserva de reinversión en el objeto social,Patrimonio,P,A,Mixta,General,"Excedentes comprometidos para reinversión (talleres, eventos, bienestar)."
 4.0.00.00,INGRESOS,Ingresos,I,A,Mixta,NA,Recursos que incrementan el patrimonio del gremio.
 4.1.00.00,INGRESOS POR CUOTAS Y APORTES,Ingresos,I,A,Mixta,NA,Cuotas y aportes de los agremiados (Art. 5 y 6 Estatutos).
@@ -164,3 +164,6 @@ codigo,cuenta,grupo,tipo,naturaleza,moneda,fondo,descripcion
 6.3.00.00,BIENES EN CUSTODIA Y COMODATO,Cuentas de Orden,CO,A,Mixta,NA,Bienes de terceros en poder de la asociación.
 6.3.01.00,Bienes recibidos en comodato,Cuentas de Orden,CO,A,Mixta,General,Equipos recibidos en préstamo de uso.
 6.3.02.00,Documentación bajo custodia,Cuentas de Orden,CO,A,Mixta,General,"Actas, libros y documentos resguardados por el Tesorero (Art. 15.b Estatutos)."
+1.1.04.09,Fondo de Operaciones - Bs,Activo,AC,D,Bs,Operaciones,Recursos para la operación diaria del gremio en bolívares.
+1.1.04.10,Fondo de Operaciones - USD/USDT,Activo,AC,D,USD,Operaciones,Recursos operativos en divisas/crypto.
+3.3.05.00,Fondo patrimonial Operaciones,Patrimonio,P,A,Mixta,Operaciones,Contrapartida del Fondo de Operaciones.
