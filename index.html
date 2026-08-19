@@ -573,9 +573,9 @@ function renderMov(){
   $('movCount').textContent=rows.length+' registros';
   const apiOn=!!effCfg().api;
   $('movNote').textContent = apiOn
-    ? 'Cada movimiento guardado se envía automáticamente a la pestaña Movimientos de la hoja "Tesoreria PROMUF" (vía API).'
-    : 'Guardados en tu navegador. Exporta el CSV y pégalo en la pestaña Movimientos de la hoja, o conecta la API (⚙ Config) para envío automático.';
-  $('movTbl').innerHTML = rows.length ? `<table class="tbl"><tr><th>Fecha</th><th>Concepto</th><th>Cuenta</th><th>Fondo</th><th>Mon</th><th class="num">Monto</th>${document.body.classList.contains('pub-mode')?'':'<th></th>'}</tr>`+
+    ? 'Blindaje: los movimientos enviados a la hoja (🔒) NO se pueden eliminar desde aquí; el ✕ solo borra borradores locales no enviados. La hoja conserva historial de versiones y el Comité de Contraloría audita trimestralmente (Art. 5 R.CC).'
+    : 'Sin API conectada: estos registros son borradores locales (exporta el CSV y pégalo en la hoja para fijarlos). Con la API activa, cada registro enviado queda blindado con 🔒 y no puede borrarse.';
+  $('movTbl').innerHTML = rows.length ? `<table class="tbl"><tr><th>Fecha</th><th>Concepto</th><th>Cuenta</th><th>Fondo</th><th>Mon</th><th class="num">Monto</th>${document.body.classList.contains('pub-mode')?'':`<th>${apiOn?'Blindaje':'Estado'}</th>`}</tr>`+
     rows.map(m=>`<tr>
       <td>${m.fecha}</td>
       <td>${m.concepto}${m.evento?`<div class="note" style="margin:0">🎪 ${m.evento}</div>`:''}</td>
@@ -583,13 +583,21 @@ function renderMov(){
       <td><span class="badge b-gray">${NOM_FONDO[m.fondo]||m.fondo}</span></td>
       <td>${m.moneda}</td>
       <td class="num ${m.tipo==='Egreso'?'neg':'pos'}">${m.tipo==='Egreso'?'−':'+'} ${fmt(m.monto)}</td>
-      ${document.body.classList.contains('pub-mode')?'':`<td><button class="btn bs br" onclick="delMov('${m.id}')">✕</button></td>`}
+      ${document.body.classList.contains('pub-mode')?'':(m.enviado
+        ? '<td><span class="badge b-green" title="Ya está en la hoja; no se puede eliminar">🔒 Hoja</span></td>'
+        : `<td><button class="btn bs br" onclick="delMov('${m.id}')" title="Borrador local no enviado">✕</button></td>`)}
     </tr>`).join('')+'</table>' : '<div class="note" style="text-align:center;padding:14px">Sin movimientos registrados.</div>';
 }
-function delMov(id){ movs=movs.filter(m=>m.id!==id); persist(); renderMov(); renderResumen(); }
+function delMov(id){
+  const m=movs.find(x=>x.id===id);
+  if(m&&m.enviado){ toast('Este registro ya está en la hoja — no se puede eliminar','e'); return; }
+  movs=movs.filter(m=>m.id!==id); persist(); renderMov(); renderResumen();
+}
 function clearMov(){
-  if(!confirm('¿Eliminar todos los movimientos guardados en el navegador?')) return;
-  movs=[]; persist(); renderMov(); renderResumen(); toast('Movimientos locales borrados','i');
+  const drafts=movs.filter(m=>!m.enviado);
+  if(!drafts.length){ toast('No hay borradores locales pendientes','i'); return; }
+  if(!confirm('¿Eliminar '+drafts.length+' borrador(es) local(es) no enviado(s)? Los que ya están en la hoja (🔒) se conservan.')) return;
+  movs=movs.filter(m=>m.enviado); persist(); renderMov(); renderResumen(); toast('Borradores locales eliminados','i');
 }
 function toCSV(rows, cols){
   const esc=x=>{ x=String(x??''); return /[",\n]/.test(x)?'"'+x.replace(/"/g,'""')+'"':x; };
@@ -696,6 +704,8 @@ async function loadSheets(){
           evento:r.evento||'', agremiado:r.agremiado||'', soporte:r.soporte||''
         })).filter(m=>m.fecha&&m.monto);
         const localIds=new Set(movs.map(m=>m.fecha+'|'+m.concepto+'|'+m.monto+'|'+m.cuenta));
+        const remoteSet=new Set(remotos.map(r=>r.fecha+'|'+r.concepto+'|'+r.monto+'|'+r.cuenta));
+        movs.forEach(m=>{ if(remoteSet.has(m.fecha+'|'+m.concepto+'|'+m.monto+'|'+m.cuenta)) m.enviado=true; });
         movs=movs.concat(remotos.filter(m=>!localIds.has(m.fecha+'|'+m.concepto+'|'+m.monto+'|'+m.cuenta)));
         persist();
         $('dot').className='dot dot-on'; $('stxt').textContent='Conectado a Google Sheets';
