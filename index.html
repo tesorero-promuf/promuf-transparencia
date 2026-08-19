@@ -314,6 +314,7 @@ const FONDOS = [
   {id:'F5', key:'Operaciones',nombre:'Fondo de Operaciones',         color:'f5', icon:'⚙',
    base_legal:'Art. 6 Estatutos / Art. 5.1 R.CC', resguardo:'0%', regla:'Recursos de operación diaria; independiente del Fondo de Ahorro'},
 ];
+const CUENTAS_PARENT = ["1.0.00.00", "1.1.00.00", "1.1.01.00", "1.1.02.00", "1.1.03.00", "1.1.04.00", "1.2.00.00", "1.2.01.00", "1.2.02.00", "1.2.03.00", "2.0.00.00", "2.1.00.00", "2.1.01.00", "2.1.02.00", "2.1.03.00", "2.2.00.00", "2.2.01.00", "3.0.00.00", "3.1.00.00", "3.2.00.00", "3.3.00.00", "3.4.00.00", "4.0.00.00", "4.1.00.00", "4.1.01.00", "4.2.00.00", "4.2.01.00", "4.2.02.00", "4.2.03.00", "4.3.00.00", "4.4.00.00", "4.5.00.00", "5.0.00.00", "5.1.00.00", "5.2.00.00", "5.3.00.00", "5.4.00.00", "5.5.00.00", "5.6.00.00", "6.0.00.00", "6.1.00.00", "6.2.00.00", "6.3.00.00"];
 const NOM_FONDO = {Membresia:'F1 · Membresía', Salud:'F2 · Salud', Autogestion:'F3 · Autogestión', Ahorro:'F4 · Ahorro', Operaciones:'F5 · Operaciones', General:'General'};
 const MONEDA_SIM = {Bs:'Bs', USD:'$', USDT:'₮'};
 
@@ -537,7 +538,7 @@ function renderPlan(){
 /* ═══════════════ MOVIMIENTOS ═══════════════ */
 function fillCuentas(){
   const sel=$('mCuenta');
-  const postable=CATALOGO.filter(c=>!CATALOGO.some(x=>x.codigo.startsWith(c.codigo+'.')));
+  const postable=CATALOGO.filter(c=>!CUENTAS_PARENT.includes(c.codigo));
   sel.innerHTML = postable.map(c=>
     `<option value="${c.codigo}" data-m="${c.moneda}">${c.codigo} · ${c.cuenta}</option>`).join('');
   sel.onchange=()=>{
