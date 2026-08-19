@@ -29,6 +29,23 @@ Elaborado conforme a:
 4. **Archivo → Compartir → Publicar en la web** → elige cada pestaña con formato **CSV** y copia la URL de cada una.
 5. En el dashboard: botón **⚙ Config** → pega las URLs → **Guardar y conectar**.
 
+### Enlace corto para el grupo de WhatsApp
+
+Las URLs publicadas son largas, por eso el enlace corto sale del archivo `config.json`:
+
+1. Abre `config.json` en GitHub (el repo → archivo → lápiz ✏️) y pega tus URLs publicadas:
+
+```json
+{
+  "mov": "https://docs.google.com/spreadsheets/d/e/2PACX-…/pub?gid=0&single=true&output=csv",
+  "fondos": "https://docs.google.com/spreadsheets/d/e/2PACX-…/pub?gid=1&single=true&output=csv",
+  "conc": "https://docs.google.com/spreadsheets/d/e/2PACX-…/pub?gid=2&single=true&output=csv"
+}
+```
+
+2. Commit the change (botón verde *Commit changes*).
+3. En el dashboard pulsa **🔗 Copiar enlace**: te copia el enlace corto `https://tesorero-promuf.github.io/promuf-transparencia/?pub=1` listo para pegar en el grupo. Quien lo abra ve la versión pública de solo lectura.
+
 ### Flujo diario del Tesorero
 
 1. Registrar el movimiento en el dashboard (fecha, fondo, cuenta del plan, moneda, monto, concepto, soporte).

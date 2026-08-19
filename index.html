@@ -123,7 +123,7 @@
   </div>
   <div class="hd-r">
     <div class="st"><span class="dot dot-off" id="dot"></span><span id="stxt">Sin conexión a Google Sheets</span></div>
-    <button class="btn bt" onclick="shareWhatsApp()">📲 Compartir</button>
+    <button class="btn bt" onclick="copyShareLink()">🔗 Copiar enlace</button>
     <button class="btn bo" onclick="openConfig()">⚙ Config</button>
   </div>
 </div>
@@ -271,6 +271,7 @@
     <div class="fg2"><label>URL CSV publicada — pestaña Fondos</label><input class="in" id="cfgFondos" placeholder="…"></div>
     <div class="fg2"><label>URL CSV publicada — pestaña Conciliación</label><input class="in" id="cfgConc" placeholder="…"></div>
     <div class="note">Para publicar: <i>Archivo → Compartir → Publicar en la web</i>, elige la pestaña y formato CSV, copia la URL de cada pestaña. Las hojas publicadas permiten lectura sin clave (solo lectura).</div>
+    <div class="note" style="margin-top:8px;padding:10px;background:rgba(230,196,104,.08);border-radius:8px">📌 <b>Enlace corto para compartir:</b> edita el archivo <code>config.json</code> del repositorio (en GitHub: abre el archivo → lápiz → pega las URLs → Commit) y el botón 🔗 Copiar enlace dará <code>…/promuf-transparencia/?pub=1</code>. Si el archivo está vacío, el botón copiará el enlace largo con las URLs incluidas.</div>
     <div style="display:flex;gap:8px;margin-top:14px">
       <button class="btn bt" onclick="saveConfig()">Guardar y conectar</button>
       <button class="btn bo" onclick="testCfg()">Probar conexión</button>
@@ -326,6 +327,13 @@ function saveConfig(){
 }
 
 /* ═══════════════ MODO PÚBLICO Y COMPARTIR ═══════════════ */
+let cfgRemote = null;
+async function loadConfigJson(){
+  try{
+    const r = await fetch('config.json');
+    if(r.ok){ cfgRemote = await r.json(); }
+  }catch(e){ cfgRemote = null; }
+}
 function readQuery(){
   try{
     const p=new URLSearchParams(location.search);
@@ -337,6 +345,7 @@ function readQuery(){
     if(Object.keys(c).length){ cfg={...cfg,...c}; localStorage.setItem('promuf_cfg',JSON.stringify(cfg)); }
   }catch(e){}
 }
+function effCfg(){ return {...(cfgRemote||{}), ...cfg}; }
 function currentPublicLink(){
   const u=location.origin+location.pathname;
   const p=new URLSearchParams();
@@ -346,11 +355,20 @@ function currentPublicLink(){
   if(cfg.conc) p.set('conc',cfg.conc);
   return u+'?'+p.toString();
 }
-function shareWhatsApp(){
-  if(!cfg.mov){ toast('Primero configura las URLs publicadas en ⚙ Config para que el enlace traiga los datos','e'); return; }
-  const link=currentPublicLink();
-  const msg='📊 Transparencia financiera PROMUF — dashboard público (solo lectura) con saldos por fondo, plan de cuentas y movimientos en tiempo real:\n'+link;
-  window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
+function copyShareLink(){
+  const base=location.origin+location.pathname;
+  const url = (cfgRemote&&cfgRemote.mov) ? base+'?pub=1' : currentPublicLink();
+  if(!cfg.mov && !(cfgRemote&&cfgRemote.mov)){ toast('Primero configura las URLs publicadas en ⚙ Config','e'); return; }
+  const ok=()=>toast((cfgRemote&&cfgRemote.mov)?'Enlace corto copiado — pégalo en el grupo de WhatsApp':'Enlace copiado (corto: agrega las URLs a config.json)','s');
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(ok,()=>{ fallbackCopy(url); });
+  } else fallbackCopy(url);
+}
+function fallbackCopy(text){
+  const ta=document.createElement('textarea'); ta.value=text;
+  ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta);
+  ta.select(); try{ document.execCommand('copy'); toast('Enlace copiado','s'); }catch(e){ toast('Copia manual: '+text,'i'); }
+  ta.remove();
 }
 
 /* ═══════════════ CONEXIÓN GOOGLE SHEETS (publicado = solo lectura) ═══════════════ */
@@ -600,7 +618,7 @@ function renderFondos(){
 /* ═══════════════ CONCILIACIÓN ═══════════════ */
 async function renderConc(){
   let rows=[];
-  try{ const txt=await fetchCSV(cfg.conc); if(txt) rows=rowsToObj(parseCSV(txt)); }catch(e){}
+  try{ const txt=await fetchCSV(effCfg().conc); if(txt) rows=rowsToObj(parseCSV(txt)); }catch(e){}
   const cols=rows.length?Object.keys(rows[0]):['periodo','fecha_conciliacion','codigo_cuenta','cuenta','moneda','saldo_libros','saldo_banco','diferencia','conciliado','observaciones'];
   $('concTbl').innerHTML=rows.length?`<tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr>`+
     rows.map(r=>`<tr>${cols.map(c=>`<td class="${c==='saldo_libros'||c==='saldo_banco'||c==='diferencia'?'num':''}">${r[c]}</td>`).join('')}</tr>`).join('')
@@ -610,9 +628,11 @@ async function renderConc(){
 /* ═══════════════ CARGA DE SHEETS Y RENDER ═══════════════ */
 async function loadSheets(){
   $('dot').className='dot dot-off'; $('stxt').textContent='Conectando…';
+  await loadConfigJson();
+  const e=effCfg();
   try{
-    if(cfg.mov){
-      const txt=await fetchCSV(cfg.mov);
+    if(e.mov){
+      const txt=await fetchCSV(e.mov);
       if(txt){
         const remote=rowsToObj(parseCSV(txt));
         const remotos=remote.map(r=>({
