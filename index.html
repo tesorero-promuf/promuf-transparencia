@@ -355,14 +355,24 @@ function currentPublicLink(){
   if(cfg.conc) p.set('conc',cfg.conc);
   return u+'?'+p.toString();
 }
-function copyShareLink(){
-  const base=location.origin+location.pathname;
-  const url = (cfgRemote&&cfgRemote.mov) ? base+'?pub=1' : currentPublicLink();
-  if(!cfg.mov && !(cfgRemote&&cfgRemote.mov)){ toast('Primero configura las URLs publicadas en ⚙ Config','e'); return; }
-  const ok=()=>toast((cfgRemote&&cfgRemote.mov)?'Enlace corto copiado — pégalo en el grupo de WhatsApp':'Enlace copiado (corto: agrega las URLs a config.json)','s');
+async function copyShareLink(){
+  if(!cfgRemote||!cfgRemote.mov){ await loadConfigJson(); }
+  const base=(location.origin&&location.origin!=='null')?location.origin+location.pathname:location.href.split('?')[0];
+  if(cfgRemote&&cfgRemote.mov){
+    copyText(base+'?pub=1');
+    toast('Enlace corto copiado — pégalo en el grupo de WhatsApp','s');
+  } else if(cfg.mov){
+    copyText(currentPublicLink());
+    toast('Enlace largo copiado. Abre la versión online ('+base+') para obtener el enlace corto','i');
+  } else {
+    toast('Primero configura las URLs publicadas en ⚙ Config','e');
+  }
+}
+function copyText(t){
+  const ok=()=>toast('Enlace copiado al portapapeles','s');
   if(navigator.clipboard&&navigator.clipboard.writeText){
-    navigator.clipboard.writeText(url).then(ok,()=>{ fallbackCopy(url); });
-  } else fallbackCopy(url);
+    navigator.clipboard.writeText(t).then(ok,()=>{ fallbackCopy(t); });
+  } else fallbackCopy(t);
 }
 function fallbackCopy(text){
   const ta=document.createElement('textarea'); ta.value=text;
@@ -629,6 +639,9 @@ async function renderConc(){
 async function loadSheets(){
   $('dot').className='dot dot-off'; $('stxt').textContent='Conectando…';
   await loadConfigJson();
+  if(!document.body.classList.contains('pub-mode') && Object.keys(cfg).length===0 && cfgRemote && cfgRemote.mov){
+    document.body.classList.add('pub-mode');
+  }
   const e=effCfg();
   try{
     if(e.mov){
