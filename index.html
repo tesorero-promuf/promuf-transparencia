@@ -206,7 +206,7 @@
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap" class="no-pub">
       <button class="btn bt" onclick="addMov()">＋ Guardar movimiento</button>
-      <button class="btn br" onclick="clearMov()">🗑 Limpiar local</button>
+      <button class="btn br" id="btnLimpiar" style="display:none" onclick="clearMov()">🗑 Limpiar local</button>
     </div>
     <div class="note" id="movNote"></div>
   </div>
@@ -583,6 +583,9 @@ function persist(){ localStorage.setItem('promuf_movs', JSON.stringify(movs)); }
 function renderMov(){
   const rows=[...movs].sort((a,b)=>b.fecha.localeCompare(a.fecha));
   $('movCount').textContent=rows.length+' registros';
+  const drafts=movs.filter(m=>!m.enviado).length;
+  const lb=$('btnLimpiar');
+  if(lb){ lb.style.display=drafts?'':'none'; lb.textContent='🗑 Limpiar local ('+drafts+' borrador'+(drafts===1?'':'es')+')'; }
   const apiOn=!!effCfg().api;
   $('movNote').textContent = apiOn
     ? 'Blindaje: los movimientos enviados a la hoja (🔒) NO se pueden eliminar desde aquí; el ✕ solo borra borradores locales no enviados. La hoja conserva historial de versiones y el Comité de Contraloría audita trimestralmente (Art. 5 R.CC).'
