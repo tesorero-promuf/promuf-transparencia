@@ -272,7 +272,7 @@
     <div class="fg2"><label>URL CSV publicada — pestaña Conciliación</label><input class="in" id="cfgConc" placeholder="…"></div>
     <div class="fg2"><label>URL API Apps Script (envío automático de movimientos — opcional)</label><input class="in" id="cfgApi" placeholder="https://script.google.com/macros/s/…/exec"></div>
     <div class="note">Para publicar: <i>Archivo → Compartir → Publicar en la web</i>, elige la pestaña y formato CSV, copia la URL de cada pestaña. Las hojas publicadas permiten lectura sin clave (solo lectura).<br><br><b>Envío automático:</b> si pegas la URL de la API (ver <code>scripts/agregar_movimiento.gs</code>), cada movimiento guardado se escribe solo en la pestaña <i>Movimientos</i>. Sin API, el flujo es manual: Exportar CSV → pegar en la hoja.</div>
-    <div class="note" style="margin-top:8px;padding:10px;background:rgba(230,196,104,.08);border-radius:8px">📌 <b>Enlace corto para compartir:</b> edita el archivo <code>config.json</code> del repositorio (en GitHub: abre el archivo → lápiz → pega las URLs → Commit) y el botón 🔗 Copiar enlace dará <code>…/promuf-transparencia/?pub=1</code>. Si el archivo está vacío, el botón copiará el enlace largo con las URLs incluidas.</div>
+    <div class="note" style="margin-top:8px;padding:10px;background:rgba(230,196,104,.08);border-radius:8px">📌 Las URLs del <code>config.json</code> del repositorio tienen prioridad sobre estas al abrir la versión online; este formulario se usa cuando no hay <code>config.json</code> o para probar otra hoja. El campo de la API sí se puede sobrescribir localmente. Si pegaste enlaces <code>pubhtml</code>, se convierten a CSV automáticamente.</div>
     <div style="display:flex;gap:8px;margin-top:14px">
       <button class="btn bt" onclick="saveConfig()">Guardar y conectar</button>
       <button class="btn bo" onclick="testCfg()">Probar conexión</button>
@@ -321,7 +321,12 @@ function openConfig(){
 }
 function closeConfig(){ $('moConfig').classList.remove('on'); }
 function saveConfig(){
-  cfg={mov:$('cfgMov').value.trim(), fondos:$('cfgFondos').value.trim(), conc:$('cfgConc').value.trim(), api:$('cfgApi').value.trim()};
+  cfg={
+    mov:normalizeURL($('cfgMov').value.trim()),
+    fondos:normalizeURL($('cfgFondos').value.trim()),
+    conc:normalizeURL($('cfgConc').value.trim()),
+    api:$('cfgApi').value.trim()
+  };
   localStorage.setItem('promuf_cfg', JSON.stringify(cfg));
   closeConfig(); testCfg(); renderAll();
   toast('Configuración guardada','s');
@@ -329,10 +334,26 @@ function saveConfig(){
 
 /* ═══════════════ MODO PÚBLICO Y COMPARTIR ═══════════════ */
 let cfgRemote = null;
+function normalizeURL(u){
+  if(!u) return u;
+  if(u.includes('/pubhtml')) u = u.replace('/pubhtml','/pub');
+  if(!u.includes('output=csv')) u += u.includes('?') ? '&output=csv' : '?output=csv';
+  return u;
+}
 async function loadConfigJson(){
   try{
     const r = await fetch('config.json');
-    if(r.ok){ cfgRemote = await r.json(); }
+    if(r.ok){
+      const j = await r.json();
+      cfgRemote = {
+        mov: normalizeURL(j.mov||''),
+        fondos: normalizeURL(j.fondos||''),
+        conc: normalizeURL(j.conc||''),
+        api: (j.api||'').trim()
+      };
+      cfg = {...cfgRemote, api: (cfg.api||cfgRemote.api||'')};
+      localStorage.setItem('promuf_cfg', JSON.stringify(cfg));
+    }
   }catch(e){ cfgRemote = null; }
 }
 function readQuery(){
