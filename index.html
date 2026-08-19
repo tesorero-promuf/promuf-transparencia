@@ -537,7 +537,8 @@ function renderPlan(){
 /* ═══════════════ MOVIMIENTOS ═══════════════ */
 function fillCuentas(){
   const sel=$('mCuenta');
-  sel.innerHTML = CATALOGO.filter(c=>c.codigo.split('.').length===5).map(c=>
+  const postable=CATALOGO.filter(c=>!CATALOGO.some(x=>x.codigo.startsWith(c.codigo+'.')));
+  sel.innerHTML = postable.map(c=>
     `<option value="${c.codigo}" data-m="${c.moneda}">${c.codigo} · ${c.cuenta}</option>`).join('');
   sel.onchange=()=>{
     const m=sel.selectedOptions[0]?.dataset.m;
