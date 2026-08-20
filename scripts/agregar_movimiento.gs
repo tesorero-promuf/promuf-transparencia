@@ -13,21 +13,29 @@
  * 1. Abre la hoja "Tesoreria PROMUF" → Extensiones → Apps Script.
  * 2. Pega este código completo (borra lo que tenga por defecto).
  * 3. Guarda (Ctrl+S).
- * 4. IMPORTANTE (solo la primera vez): selecciona la función
+ * 4. IMPORTANTE (solo la primera vez): configura el token privado:
+ *    ⚙ (Configuración del proyecto) → Propiedades del script →
+ *    Añadir propiedad → Nombre: API_TOKEN · Valor: el token del
+ *    tesorero. El token NUNCA se publica en el repositorio.
+ * 5. IMPORTANTE (solo la primera vez): selecciona la función
  *    "autorizar" → ▶ Ejecutar → Acepta los permisos.
- * 5. Implementar → Administrar implementaciones → lápiz ✏️ en la
+ * 6. Implementar → Administrar implementaciones → lápiz ✏️ en la
  *    "Aplicación web" → Versión: "Nueva versión" → Implementar.
  *    (Mantienes la misma URL; no hace falta crear una nueva.)
- * 6. En el dashboard: ⚙ Config → "Token API" → pega el token que
- *    tienes en config.json (campo "api_token").
+ * 7. En el dashboard (solo el tesorero): ⚙ Config → "Token API" →
+ *    pega el mismo token. Se guarda únicamente en tu navegador;
+ *    cada dispositivo requiere su propio pegado.
  */
 
 var NOMBRE_HOJA = 'Movimientos';
-var TOKEN = 'pf-6c7f9c2a12b0dd6c95ca6ec8ba7306a4';
+var TOKEN = PropertiesService.getScriptProperties().getProperty('API_TOKEN') || '';
 
 function doPost(e) {
   try {
     var body = JSON.parse(e.postData.contents);
+    if (!TOKEN) {
+      return responder({ ok: false, error: 'Token no configurado en el script' });
+    }
     if (!body || body.token !== TOKEN) {
       return responder({ ok: false, error: 'Token inválido' });
     }
