@@ -72,7 +72,45 @@ function doPost(e) {
 }
 
 function doGet(e) {
-  return responder({ ok: true, msg: 'API Tesorería PROMUF activa' });
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    return responder({
+      ok: true,
+      movimientos: hojaACSV(ss, NOMBRE_HOJA),
+      conciliacion: hojaACSV(ss, 'Conciliacion')
+    });
+  } catch (err) {
+    return responder({ ok: false, error: String(err) });
+  }
+}
+
+// Solo lectura: convierte una pestaña en CSV de texto (mismo formato que data/*.csv)
+function hojaACSV(ss, nombre) {
+  try {
+    var sh = ss.getSheetByName(nombre);
+    if (!sh) return '';
+    var vals = sh.getDataRange().getValues();
+    if (!vals.length) return '';
+    return vals.map(function(fila) {
+      return fila.map(celdaCSV).join(',');
+    }).join('\n');
+  } catch (err) {
+    return '';
+  }
+}
+
+function celdaCSV(c) {
+  if (c instanceof Date) {
+    var m = ('0' + (c.getMonth() + 1)).slice(-2);
+    var d = ('0' + c.getDate()).slice(-2);
+    return c.getFullYear() + '-' + m + '-' + d;
+  }
+  if (c === null || c === undefined) return '';
+  var s = String(c);
+  if (s.indexOf(',') !== -1 || s.indexOf('"') !== -1 || s.indexOf('\n') !== -1) {
+    s = '"' + s.replace(/"/g, '""') + '"';
+  }
+  return s;
 }
 
 /**
